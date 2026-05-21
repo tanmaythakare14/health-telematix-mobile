@@ -1,0 +1,158 @@
+name: PR Test Coverage
+
+on:
+  pull_request:
+    branches:
+      - development
+      - staging
+      - uat
+      - master
+      - main
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      # -----------------------------
+      # Checkout
+      # -----------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -----------------------------
+      # Node setup (Node >= 22)
+      # -----------------------------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Clear Yarn cache
+        run: yarn cache clean
+
+      # -----------------------------
+      # Install dependencies
+      # -----------------------------
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --ignore-engines
+
+      # -----------------------------
+      # Run Jest (do not fail job yet)
+      # -----------------------------
+      - name: Run tests with coverage
+        id: tests
+        continue-on-error: true
+        run: yarn test:ci
+
+      # -----------------------------
+      # Install jq safely
+      # -----------------------------
+      - name: Install jq
+        run: |
+          if ! command -v jq &> /dev/null; then
+            curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o jq
+            chmod +x jq
+            sudo mv jq /usr/local/bin/jq
+          fi
+
+      # -----------------------------
+      # Parse test & coverage results
+      # -----------------------------
+      - name: Parse test & coverage results
+        run: |
+          echo "📂 Files in workspace:"
+          ls -la
+
+          echo "📂 Coverage folder:"
+          ls -la coverage || true
+
+          if [ -f jest-results.json ]; then
+            PASSED=$(jq -r '.numPassedTests // 0' jest-results.json)
+            FAILED=$(jq -r '.numFailedTests // 0' jest-results.json)
+            TOTAL=$(jq -r '.numTotalTests // 0' jest-results.json)
+          else
+            PASSED=0
+            FAILED=0
+            TOTAL=0
+          fi
+
+          if [ -f coverage/coverage-summary.json ]; then
+            LINES=$(jq -r '.total.lines.pct // "N/A"' coverage/coverage-summary.json)
+            STATEMENTS=$(jq -r '.total.statements.pct // "N/A"' coverage/coverage-summary.json)
+            FUNCTIONS=$(jq -r '.total.functions.pct // "N/A"' coverage/coverage-summary.json)
+            BRANCHES=$(jq -r '.total.branches.pct // "N/A"' coverage/coverage-summary.json)
+          else
+            LINES="N/A"
+            STATEMENTS="N/A"
+            FUNCTIONS="N/A"
+            BRANCHES="N/A"
+          fi
+
+          echo "PASSED=$PASSED" >> $GITHUB_ENV
+          echo "FAILED=$FAILED" >> $GITHUB_ENV
+          echo "TOTAL=$TOTAL" >> $GITHUB_ENV
+          echo "LINES=$LINES" >> $GITHUB_ENV
+          echo "STATEMENTS=$STATEMENTS" >> $GITHUB_ENV
+          echo "FUNCTIONS=$FUNCTIONS" >> $GITHUB_ENV
+          echo "BRANCHES=$BRANCHES" >> $GITHUB_ENV
+
+          echo "✅ Parsed values:"
+          echo "Passed=$PASSED Failed=$FAILED Total=$TOTAL"
+          echo "Coverage L=$LINES S=$STATEMENTS F=$FUNCTIONS B=$BRANCHES"
+
+      # -----------------------------
+      # Comment on PR
+      # -----------------------------
+      - name: Comment PR with coverage report
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          PASSED: ${{ env.PASSED }}
+          FAILED: ${{ env.FAILED }}
+          TOTAL: ${{ env.TOTAL }}
+          LINES: ${{ env.LINES }}
+          STATEMENTS: ${{ env.STATEMENTS }}
+          FUNCTIONS: ${{ env.FUNCTIONS }}
+          BRANCHES: ${{ env.BRANCHES }}
+        with:
+          script: |
+            const failed = Number(process.env.FAILED || 0);
+            const status = failed > 0 ? '❌ Tests Failed' : '✅ Tests Passed';
+
+            const body =
+            `### 🧪 Test & Coverage Report
+
+            **Status:** ${status}
+
+            **Tests**
+            - Total: ${process.env.TOTAL}
+            - Passed: ${process.env.PASSED}
+            - Failed: ${process.env.FAILED}
+
+            **Coverage**
+            - Lines: ${process.env.LINES}%
+            - Statements: ${process.env.STATEMENTS}%
+            - Functions: ${process.env.FUNCTIONS}%
+            - Branches: ${process.env.BRANCHES}%
+
+            _Generated automatically on PR creation_`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+
+      # -----------------------------
+      # Fail workflow only if tests failed
+      # -----------------------------
+      - name: Fail workflow if tests failed
+        if: env.FAILED != '0'
+        run: exit 1

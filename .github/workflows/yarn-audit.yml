@@ -1,0 +1,143 @@
+name: PR Vulnerabilities Report
+
+on:
+  pull_request:
+    branches:
+      - development
+      - staging
+      - uat
+      - main
+      - master
+
+jobs:
+  yarn-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Clear Yarn cache
+        run: yarn cache clean
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --ignore-engines
+
+      # yarn audit exits non-zero if vulns exist → never fail here
+      - name: Run yarn audit
+        run: |
+          yarn audit --json > yarn-audit.json || true
+
+      - name: Extract vulnerability data
+        id: summary
+        run: |
+          set -euo pipefail
+
+          if [ ! -f yarn-audit.json ]; then
+            {
+              echo "info=0"
+              echo "low=0"
+              echo "moderate=0"
+              echo "high=0"
+              echo "critical=0"
+              echo "table="
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          INFO=$(jq -r 'select(.type=="auditAdvisory" and .data.advisory.severity=="info") | 1' yarn-audit.json | wc -l)
+          LOW=$(jq -r 'select(.type=="auditAdvisory" and .data.advisory.severity=="low") | 1' yarn-audit.json | wc -l)
+          MODERATE=$(jq -r 'select(.type=="auditAdvisory" and .data.advisory.severity=="moderate") | 1' yarn-audit.json | wc -l)
+          HIGH=$(jq -r 'select(.type=="auditAdvisory" and .data.advisory.severity=="high") | 1' yarn-audit.json | wc -l)
+          CRITICAL=$(jq -r 'select(.type=="auditAdvisory" and .data.advisory.severity=="critical") | 1' yarn-audit.json | wc -l)
+
+          {
+            echo "info=${INFO:-0}"
+            echo "low=${LOW:-0}"
+            echo "moderate=${MODERATE:-0}"
+            echo "high=${HIGH:-0}"
+            echo "critical=${CRITICAL:-0}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "| Package | Severity | Title |" > table.md
+          echo "|--------|----------|-------|" >> table.md
+
+          jq -r '
+            select(.type=="auditAdvisory")
+            | .data.advisory
+            | "| \(.module_name | @text) | \(.severity | @text) | \(.title | gsub("[|\\\\`$]"; "_") | @text) |"
+          ' yarn-audit.json | head -n 15 >> table.md
+
+          {
+            echo "table<<EOF"
+            cat table.md
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comment vulnerabilities on PR
+        uses: actions/github-script@v7
+        env:
+          INFO: ${{ steps.summary.outputs.info }}
+          LOW: ${{ steps.summary.outputs.low }}
+          MODERATE: ${{ steps.summary.outputs.moderate }}
+          HIGH: ${{ steps.summary.outputs.high }}
+          CRITICAL: ${{ steps.summary.outputs.critical }}
+          TABLE: ${{ steps.summary.outputs.table }}
+        with:
+          script: |
+            const info = Number(process.env.INFO);
+            const low = Number(process.env.LOW);
+            const moderate = Number(process.env.MODERATE);
+            const high = Number(process.env.HIGH);
+            const critical = Number(process.env.CRITICAL);
+            const table = process.env.TABLE;
+
+            const total = info + low + moderate + high + critical;
+
+            const status =
+              high > 0 || critical > 0
+                ? "⚠️ **High / Critical vulnerabilities detected**"
+                : "✅ **No High or Critical vulnerabilities**";
+
+            let body = `## 🔐 Yarn Audit Report
+
+            ${status}
+
+            ### Summary
+            - **Total issues:** ${total}
+            - ℹ️ Info: **${info}**
+            - 🟢 Low: **${low}**
+            - 🟡 Moderate: **${moderate}**
+            - 🚨 High: **${high}**
+            - ☠️ Critical: **${critical}**
+            `;
+
+            if (table && table.includes('|')) {
+              body += `
+            ### Affected Packages (Top 15)
+
+            ${table}
+
+            _Only first 15 vulnerabilities shown to keep PR readable._
+            `;
+            }
+
+            body += `
+            _Generated automatically on PR creation._
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });

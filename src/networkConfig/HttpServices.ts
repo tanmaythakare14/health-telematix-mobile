@@ -1,0 +1,173 @@
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+  Method,
+} from 'axios';
+import i18n from 'i18next';
+import Toast from 'react-native-toast-message';
+import { ApiResponse, CustomAxiosRequestConfig } from 'types/types';
+import { logger } from 'utils/SecureLogger';
+import StorageService from 'utils/StorageService';
+import { ERROR_CODES, TOAST_TYPE } from '../utils/Constants';
+const AUTHORIZATION = 'Authorization';
+
+const axiosInstance: AxiosInstance = axios.create({
+  baseURL: '', // Set the base URL dynamically if needed
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 20000,
+});
+
+let isRefreshing = false;
+let failedQueue: { resolve: (value?: unknown) => void; reject: (reason?: AxiosError | Error) => void }[] = [];
+
+const processQueue = (error: AxiosError | Error | unknown, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (token) {
+      prom.resolve(token);
+    } else {
+      prom.reject(error as AxiosError);
+    }
+  });
+  failedQueue = [];
+};
+
+// Attach the access token to requests
+axiosInstance.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+  const token = await StorageService.getItem(StorageService.storageKeys.token); // Retrieve token from storage
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Extend InternalAxiosRequestConfig to include _retry
+
+// Handle response errors
+axiosInstance.interceptors.response.use(
+  (response: AxiosResponse<ApiResponse>) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as CustomAxiosRequestConfig;
+
+    if (error.response) {
+      const { status } = error.response;
+
+      if (status === ERROR_CODES.UNAUTHORIZED) {
+        if (!originalRequest._retry) {
+          if (!isRefreshing) {
+            isRefreshing = true;
+            try {
+              const newToken = await refreshAccessToken(); // Refresh token
+              StorageService.storeItem(StorageService.storageKeys.token, newToken); // Store new token
+              axiosInstance.defaults.headers[AUTHORIZATION] = `Bearer ${newToken}`;
+              processQueue(null, newToken);
+              return axiosInstance(originalRequest);
+            } catch (err: unknown) {
+              processQueue(err, null);
+              logoutUser();
+              return Promise.reject(err);
+            } finally {
+              isRefreshing = false;
+            }
+          }
+
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              originalRequest.headers![AUTHORIZATION] = `Bearer ${token}`;
+              return axiosInstance(originalRequest);
+            })
+            .catch((err) => Promise.reject(err));
+        }
+      } else if (status === ERROR_CODES.FORBIDDEN) {
+        logoutUser();
+      } else if (status === ERROR_CODES.INTERNAL_SERVER_ERROR) {
+        Toast.show({
+          type: TOAST_TYPE.ERROR,
+          text1: i18n.t('network.server.error'),
+        });
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
+
+async function refreshAccessToken(): Promise<string> {
+  try {
+    const refreshToken = await StorageService.getItem(StorageService.storageKeys.refresh_token);
+    if (!refreshToken) {
+      throw new Error('No refresh token found');
+    }
+
+    //replace with your api endpoint here
+    //e.x const url = 'https://mindbowser.com/auth/refresh';
+    const response = await axios.post<ApiResponse<{ token: string }>>('/auth/refresh', { refreshToken });
+    return response.data.data.token;
+  } catch (error: unknown) {
+    logger.error('Token refresh failed', { error });
+
+    throw new Error('Token refresh failed');
+  }
+}
+
+function logoutUser() {
+  // Implement logout functionality here
+  // Clear local storage and navigate to login page
+}
+
+export default class HTTPService {
+  private static async request<T>(
+    method: Method,
+    url: string,
+    body?: Record<string, unknown>,
+    params?: Record<string, unknown>,
+    config?: AxiosRequestConfig,
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response = await axiosInstance.request<ApiResponse<T>>({
+        method,
+        url,
+        data: body,
+        params,
+        ...config,
+      });
+
+      return response.data;
+    } catch (error: unknown) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Unified error handler
+  private static handleError(error: unknown): Error {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.message || error.message;
+      logger.error('API Error:', { message });
+      return new Error(message);
+    }
+    return new Error(i18n.t('network.generic.error'));
+  }
+
+  static async get<T>(url: string, params?: Record<string, unknown>): Promise<ApiResponse<T>> {
+    return this.request<T>('get', url, undefined, params);
+  }
+
+  static async post<T>(url: string, body?: Record<string, unknown>): Promise<ApiResponse<T>> {
+    return this.request<T>('post', url, body);
+  }
+
+  static async put<T>(url: string, body?: Record<string, unknown>): Promise<ApiResponse<T>> {
+    return this.request<T>('put', url, body);
+  }
+
+  static async delete<T>(url: string, body?: Record<string, unknown>): Promise<ApiResponse<T>> {
+    return this.request<T>('delete', url, body);
+  }
+}

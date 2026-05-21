@@ -1,0 +1,61 @@
+ENV['RCT_NEW_ARCH_ENABLED'] = '1'
+ENV['RCT_USE_PREBUILT_RNCORE'] = '0'
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
+
+abstract_target 'App' do
+  config = use_native_modules!
+
+  use_frameworks! :linkage => :static
+  $RNFirebaseAsStaticFramework = true
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  target 'template' do
+    #Production-specific pods  
+  end
+  target 'templateQA' do
+    #QA-specific pods
+  end
+  target 'templateDevelopment' do
+    #Development-specific pods
+  end
+  target 'templateStaging' do
+    #Staging-specific pods
+  end
+  target 'templateUAT' do
+    #UAT-specific pods
+  end
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
+    )
+    # Can Remove if you have Xcode 16.3
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.6'
+      end
+    end
+  end
+end

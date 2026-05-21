@@ -1,0 +1,14 @@
+{
+  "transitions": {
+    "flow": [
+      "To Do",
+      "In Progress",
+      "Ready for QA",
+      "Done"
+    ],
+    "runIndex": 1,
+    "doneIndex": 2,
+    "startIndex": null,
+    "blockIndex": null
+  }
+}

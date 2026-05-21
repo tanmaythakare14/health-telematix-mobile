@@ -1,0 +1,24 @@
+{
+  "tabWidth": 2,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "printWidth": 120,
+  "singleAttributePerLine": true,
+  "importOrder": [
+    "@assets/(.*)$",
+    "@components/(.*)$",
+    "@desktop/(.*)$",
+    "@github/(.*)$",
+    "@hooks/(.*)$",
+    "@libs/(.*)$",
+    "@navigation/(.*)$",
+    "@pages/(.*)$",
+    "@styles/(.*)$",
+    "@userActions/(.*)$",
+    "@src/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSortSpecifiers": true,
+  "importOrderCaseInsensitive": true
+}
