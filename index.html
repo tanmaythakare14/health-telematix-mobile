@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Health Telematix — Login Preview</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     :root {
       --background:       #ffffff;
@@ -270,74 +271,87 @@
     .care-view {
       display: none; flex-direction: column; height: 100%;
       background: #f5f7fa; animation: fadeIn 0.35s ease;
+      position: relative; overflow: hidden;
     }
     .care-view.active { display: flex; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* ── Top Header ─────────────────────────────────────────── */
+    /* ── Top Header (redesigned) ────────────────────────────── */
     .care-header {
-      background: var(--primary);
-      padding: 0 20px 18px;
+      background: #ffffff;
+      padding: 0 20px 14px;
       flex-shrink: 0;
+      border-bottom: 1px solid #f1f5f9;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.04);
       position: relative;
+      z-index: 10;
     }
     .care-status-bar {
       display: flex; justify-content: space-between; align-items: center;
-      padding-top: 14px; height: 50px;
+      padding-top: 14px; height: 44px;
     }
-    .care-status-time { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+    .care-status-time { font-size: 15px; font-weight: 700; color: #0f172a; letter-spacing: -0.3px; }
     .care-status-icons { display: flex; align-items: center; gap: 5px; }
 
     .care-header-row {
       display: flex; align-items: center; justify-content: space-between;
-      margin-top: 4px;
+      margin-top: 2px;
     }
     .care-greeting { flex: 1; }
     .care-greeting-hi {
-      font-size: 22px; font-weight: 700; color: #fff;
-      letter-spacing: -0.4px; line-height: 1.2;
+      font-size: 19px; font-weight: 700; color: #0f172a;
+      letter-spacing: -0.4px; line-height: 1.25;
     }
     .care-greeting-sub {
-      font-size: 12.5px; color: rgba(255,255,255,0.55);
-      margin-top: 3px; font-weight: 400;
+      font-size: 12px; color: #94a3b8;
+      margin-top: 2px; font-weight: 400;
     }
-    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+
+    /* Bell button */
     .header-icon-btn {
-      width: 38px; height: 38px; border-radius: 50%;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.15);
+      width: 38px; height: 38px; border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; position: relative;
-      transition: background 0.15s;
+      transition: background 0.15s, box-shadow 0.15s;
     }
-    .header-icon-btn:hover { background: rgba(255,255,255,0.2); }
-    .header-icon-btn svg { color: #fff; }
-    .notif-dot {
-      position: absolute; top: 6px; right: 7px;
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #f87171;
-      border: 1.5px solid var(--primary);
-    }
-    .user-avatar {
-      width: 38px; height: 38px; border-radius: 50%;
-      background: linear-gradient(135deg, #4f9ec4, #2d6e99);
-      border: 2px solid rgba(255,255,255,0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; color: #fff;
-      cursor: pointer; letter-spacing: 0.5px;
+    .header-icon-btn:hover { background: #f1f5f9; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .header-icon-btn i,
+    .header-icon-btn svg { color: #475569; width: 18px; height: 18px; }
+    .notif-badge {
+      position: absolute; top: 7px; right: 7px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #ef4444;
+      border: 1.5px solid #fff;
     }
 
-    /* Search bar */
-    .header-search {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 10px;
-      padding: 0 14px; height: 38px;
-      margin-top: 14px;
+    /* Avatar */
+    .user-avatar {
+      width: 38px; height: 38px; border-radius: 12px;
+      background: linear-gradient(135deg, #1A2D45 0%, #2a4568 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff;
+      cursor: pointer; letter-spacing: 0.5px;
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(26,45,69,0.18);
     }
-    .header-search svg { color: rgba(255,255,255,0.5); flex-shrink: 0; }
-    .header-search span { font-size: 13.5px; color: rgba(255,255,255,0.45); }
+
+    /* Search bar (in body now, not header) */
+    .body-search {
+      display: flex; align-items: center; gap: 8px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 12px;
+      padding: 0 14px; height: 40px;
+      margin: 14px 0 4px;
+      transition: border-color 0.15s;
+    }
+    .body-search:focus-within { border-color: #cbd5e1; }
+    .body-search i,
+    .body-search svg { color: #94a3b8; flex-shrink: 0; width: 15px; height: 15px; }
+    .body-search span { font-size: 13px; color: #94a3b8; }
 
     /* ── Scrollable Content ─────────────────────────────────── */
     .care-body {
@@ -404,6 +418,679 @@
     .badge-today  { background: #fff7ed; color: #ea580c; }
     .badge-done   { background: #f0fdf4; color: #16a34a; }
 
+    /* ── Content screens (tab switching) ───────────────────── */
+    .content-screen { display: none; flex-direction: column; }
+    .content-screen.active { display: flex; }
+
+    /* Coming Soon screen */
+    .cs-wrap {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 0 32px 40px; gap: 18px;
+      background: #f9fbff;
+    }
+    .cs-icon-ring {
+      width: 96px; height: 96px; border-radius: 28px;
+      background: linear-gradient(145deg, #eef3fb, #dde8f7);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 32px rgba(26,45,69,0.10), 0 2px 8px rgba(26,45,69,0.06);
+    }
+    .cs-icon-ring i,
+    .cs-icon-ring svg { width: 42px; height: 42px; color: var(--primary); stroke-width: 1.4; }
+    .cs-text { text-align: center; }
+    .cs-title { font-size: 20px; font-weight: 700; color: #0f172a; letter-spacing: -0.4px; margin-bottom: 8px; }
+    .cs-desc { font-size: 13px; color: #94a3b8; line-height: 1.65; }
+    .cs-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid #e2e8f0;
+      border-radius: 20px; padding: 7px 16px;
+      font-size: 11.5px; font-weight: 600; color: #475569;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .cs-badge i { width: 12px; height: 12px; color: #f59e0b; }
+
+    /* ── Care Plan Module ──────────────────────────────────── */
+    .cp-heading-row {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 16px; margin-top: 2px;
+    }
+    .cp-heading-title { font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; }
+    .cp-heading-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .cp-summary-chip {
+      display: flex; align-items: center; gap: 4px;
+      background: #f0fdf4; border: 1px solid #bbf7d0;
+      border-radius: 20px; padding: 4px 10px;
+      font-size: 10px; font-weight: 600; color: #16a34a;
+      flex-shrink: 0;
+    }
+    .cp-summary-chip i, .cp-summary-chip svg { width: 12px; height: 12px; color: #16a34a; }
+
+    /* Tab Switcher */
+    .cp-tab-row {
+      display: flex; gap: 4px;
+      background: #f1f5f9; border-radius: 12px;
+      padding: 4px; margin-bottom: 16px;
+    }
+    .cp-tab-btn {
+      flex: 1; padding: 8px 0; border-radius: 9px;
+      border: none; background: none;
+      font-family: inherit; font-size: 13px;
+      font-weight: 500; color: #64748b;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .cp-tab-btn.active {
+      background: #fff; color: #1A2D45; font-weight: 700;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
+
+    /* Panel */
+    .cp-panel { display: none; }
+    .cp-panel.active { display: block; }
+
+    /* Care Plan Card */
+    .cp-card {
+      background: #fff; border-radius: 16px;
+      padding: 14px 14px 12px; margin-bottom: 10px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      cursor: pointer; transition: all 0.18s ease;
+    }
+    .cp-card:active { transform: scale(0.99); }
+    .cp-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
+    .cp-card-past { background: #fafafa; }
+    .cp-card-top {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 11px;
+    }
+    .cp-card-icon {
+      width: 42px; height: 42px; border-radius: 13px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .cp-card-icon i, .cp-card-icon svg { width: 18px; height: 18px; }
+    .cp-card-body { flex: 1; min-width: 0; }
+    .cp-card-title {
+      font-size: 13.5px; font-weight: 700; color: #0f172a;
+      margin-bottom: 3px; line-height: 1.3;
+    }
+    .cp-card-prog { font-size: 11.5px; color: #94a3b8; }
+
+    /* Footer row */
+    .cp-card-footer {
+      display: flex; align-items: center; gap: 6px;
+      padding-top: 10px; border-top: 1px solid #f8fafc;
+    }
+    .cp-prog-badge {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 5px; letter-spacing: 0.3px;
+    }
+    .cp-badge-apcm { background: #EEF2F8; color: #1A2D45; }
+    .cp-badge-rpm  { background: #e0f2fe; color: #0369a1; }
+    .cp-badge-bhi  { background: #f3e8ff; color: #7e22ce; }
+    .cp-badge-past { background: #f1f5f9; color: #64748b; }
+
+    /* Status */
+    .cp-status-dot {
+      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+    }
+    .active-dot    { background: #22c55e; box-shadow: 0 0 0 2px rgba(34,197,94,0.2); }
+    .completed-dot { background: #94a3b8; }
+    .cp-status-active    { font-size: 11px; font-weight: 600; color: #16a34a; }
+    .cp-status-completed { font-size: 11px; font-weight: 600; color: #94a3b8; }
+
+    /* Date */
+    .cp-date {
+      font-size: 10.5px; color: #94a3b8; margin-left: auto;
+      display: flex; align-items: center; gap: 3px;
+    }
+    .cp-date i, .cp-date svg { width: 11px; height: 11px; color: #b0bec5; }
+
+    /* ── Dynamic Module Header ─────────────────────────────── */
+    .module-header-row {
+      display: none; align-items: center; gap: 10px;
+      margin-top: 2px; min-height: 38px;
+    }
+    .care-header.mode-module .care-header-row { display: none; }
+    .care-header.mode-module .module-header-row { display: flex; }
+
+    .module-back-btn {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: #f8fafc; border: 1px solid #f1f5f9;
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; transition: background 0.15s;
+    }
+    .module-back-btn:hover { background: #f1f5f9; }
+    .module-back-btn i, .module-back-btn svg { width: 16px; height: 16px; color: #475569; }
+    .module-back-btn.visible { display: flex; }
+    .module-title-text { font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; flex: 1; }
+
+    .module-add-btn {
+      display: none; align-items: center; gap: 5px;
+      background: #1A2D45; border: none; border-radius: 10px;
+      padding: 7px 12px; font-family: inherit;
+      font-size: 11.5px; font-weight: 600; color: #fff; cursor: pointer;
+      transition: opacity 0.15s; flex-shrink: 0;
+    }
+    .module-add-btn:hover { opacity: 0.88; }
+    .module-add-btn i, .module-add-btn svg { width: 12px; height: 12px; }
+    .module-add-btn.visible { display: flex; }
+
+    /* ── Add Medication Form ───────────────────────────────── */
+    .addmed-body { padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* Form card wrapper */
+    .af-card {
+      background: #fff; border-radius: 16px;
+      border: 1.5px solid #f1f5f9;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+      padding: 16px 16px 18px;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .af-card-title {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 12px; font-weight: 700; color: #64748b;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      margin-bottom: 14px; padding-bottom: 12px;
+      border-bottom: 1px solid #f8fafc;
+    }
+
+    /* Field group */
+    .af-group { display: flex; flex-direction: column; gap: 6px; }
+    .af-row { display: flex; gap: 12px; }
+    .af-group-half { flex: 1; min-width: 0; }
+
+    /* Label */
+    .af-field-label {
+      font-size: 11.5px; font-weight: 600; color: #94a3b8;
+      letter-spacing: 0.3px;
+    }
+
+    /* Text input */
+    .af-input {
+      width: 100%; padding: 12px 14px;
+      font-family: inherit; font-size: 14px; font-weight: 500; color: #0f172a;
+      background: #f8fafc; border: 1.5px solid #f1f5f9; border-radius: 12px;
+      outline: none; box-sizing: border-box; transition: border-color 0.15s;
+    }
+    .af-input:focus { border-color: #1A2D45; background: #fff; }
+    .af-input::placeholder { color: #c0ccd8; font-weight: 400; }
+
+    /* Search input (with icon) */
+    .af-search-wrap {
+      position: relative; background: #fff;
+      border: 1.5px solid #f1f5f9; border-radius: 14px;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.04); overflow: visible;
+    }
+    .af-search-wrap:focus-within { border-color: #1A2D45; }
+    .af-field-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      pointer-events: none; display: flex;
+    }
+    .af-field-icon i, .af-field-icon svg { width: 16px; height: 16px; }
+    .af-input-search {
+      padding-left: 42px; background: transparent; border: none;
+      box-shadow: none;
+    }
+    .af-input-search:focus { border: none; background: transparent; }
+
+    /* Dropdown field */
+    .af-select-field {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 14px; background: #f8fafc;
+      border: 1.5px solid #f1f5f9; border-radius: 12px;
+      cursor: pointer; transition: border-color 0.15s, background 0.15s;
+      min-height: 46px;
+    }
+    .af-select-field:active { background: #f1f5f9; border-color: #cbd5e1; }
+    .af-select-val {
+      flex: 1; font-size: 14px; font-weight: 500; color: #0f172a;
+    }
+    .af-select-val.placeholder { color: #c0ccd8; font-weight: 400; }
+
+    /* Pill counter */
+    .af-pill-counter {
+      display: flex; align-items: center; gap: 0;
+      background: #f8fafc; border: 1.5px solid #f1f5f9;
+      border-radius: 12px; overflow: hidden; height: 46px;
+    }
+    .af-counter-btn {
+      width: 44px; height: 100%; background: transparent;
+      border: none; font-size: 18px; font-weight: 400; color: #475569;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s; flex-shrink: 0;
+    }
+    .af-counter-btn:active { background: #e8edf3; }
+    .af-counter-val {
+      flex: 1; text-align: center; font-size: 15px; font-weight: 700;
+      color: #0f172a; border-left: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9;
+      height: 100%; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Chip row (meal time) */
+    .af-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .af-chip {
+      padding: 7px 13px; border-radius: 20px;
+      background: #f8fafc; border: 1.5px solid #e8edf3;
+      font-size: 12.5px; font-weight: 600; color: #64748b;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .af-chip.selected {
+      background: #1A2D45; border-color: #1A2D45; color: #fff;
+    }
+
+    /* Autocomplete suggestions */
+    .addmed-suggestions {
+      position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+      background: #fff; border-radius: 14px;
+      border: 1.5px solid #e8edf3;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+      z-index: 50; overflow: hidden; display: none;
+    }
+    .addmed-suggestions.open { display: block; }
+    .addmed-sugg-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; cursor: pointer; transition: background 0.12s;
+      border-bottom: 1px solid #f8fafc;
+    }
+    .addmed-sugg-item:last-child { border-bottom: none; }
+    .addmed-sugg-item:hover, .addmed-sugg-item:active { background: #f8fafc; }
+    .addmed-sugg-dot { width: 7px; height: 7px; border-radius: 50%; background: #0077b6; flex-shrink: 0; }
+    .addmed-sugg-name { font-size: 13.5px; font-weight: 600; color: #0f172a; }
+    .addmed-sugg-type { font-size: 11px; color: #94a3b8; margin-left: auto; }
+
+    /* Save button */
+    .addmed-save-bar {
+      display: none; padding: 12px 16px 10px;
+      background: #fff; border-top: 1px solid #f1f5f9;
+      flex-shrink: 0; box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
+    }
+    .addmed-save-bar.visible { display: block; }
+    .addmed-save-btn {
+      width: 100%; padding: 15px; background: #1A2D45;
+      border: none; border-radius: 14px; font-family: inherit;
+      font-size: 15px; font-weight: 700; color: #fff; cursor: pointer;
+      transition: opacity 0.15s; letter-spacing: -0.2px;
+    }
+    .addmed-save-btn:active { opacity: 0.85; }
+
+    /* ── Devices Module ─────────────────────────────────────── */
+    .dv-body { padding: 14px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
+
+    .dv-card {
+      background: #fff; border-radius: 16px;
+      border: 1.5px solid #f1f5f9;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.045);
+      padding: 15px 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .dv-card-left { display: flex; align-items: center; gap: 13px; flex: 1; min-width: 0; }
+    .dv-icon-wrap {
+      width: 46px; height: 46px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .dv-info { flex: 1; min-width: 0; }
+    .dv-name { font-size: 13.5px; font-weight: 700; color: #0f172a; letter-spacing: -0.2px; white-space: nowrap; }
+    .dv-sub  { font-size: 11.5px; font-weight: 500; color: #94a3b8; margin-top: 1px; margin-bottom: 5px; }
+    .dv-meta { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #64748b; font-weight: 500; white-space: nowrap; }
+
+    .dv-right { display: flex; flex-direction: column; align-items: flex-end; gap: 9px; flex-shrink: 0; }
+
+    .dv-status-pill {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; white-space: nowrap;
+    }
+    .dv-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .dv-connected { background: #f0fdf4; color: #16a34a; }
+    .dv-connected .dv-dot { background: #22c55e; box-shadow: 0 0 0 2px rgba(34,197,94,0.22); }
+
+    .dv-remove-btn {
+      width: 30px; height: 30px; border-radius: 9px;
+      background: #fef2f2; border: 1.5px solid #fee2e2;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #ef4444; transition: background 0.12s; flex-shrink: 0;
+    }
+    .dv-remove-btn:active { background: #fee2e2; }
+
+    /* ── Bottom Sheet Overlay ───────────────────────────────── */
+    .bs-overlay {
+      position: absolute; inset: 0; background: rgba(15,23,42,0.42);
+      z-index: 300; display: none; align-items: flex-end;
+      overflow: hidden;
+    }
+    .bs-overlay.open { display: flex; }
+    .bs-sheet {
+      width: 100%; background: #fff;
+      border-radius: 24px 24px 0 0;
+      padding-bottom: 16px;
+      animation: slideUp 0.28s cubic-bezier(0.34,1.10,0.64,1);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0.6; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .bs-handle {
+      width: 36px; height: 4px; background: #e2e8f0;
+      border-radius: 2px; margin: 12px auto 0;
+    }
+    .bs-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px 10px;
+    }
+    .bs-title { font-size: 15px; font-weight: 800; color: #0f172a; letter-spacing: -0.3px; }
+    .bs-close {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #f1f5f9; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .bs-close i, .bs-close svg { width: 14px; height: 14px; color: #64748b; }
+    .bs-divider { height: 1px; background: #f1f5f9; margin: 0 20px 6px; }
+    .bs-options { padding: 4px 12px 8px; max-height: 260px; overflow-y: auto; }
+    .bs-option {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 10px; border-radius: 12px; cursor: pointer;
+      transition: background 0.12s; margin-bottom: 2px;
+    }
+    .bs-option:hover, .bs-option:active { background: #f8fafc; }
+    .bs-option-label { font-size: 14px; font-weight: 500; color: #1e293b; }
+    .bs-option-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .bs-option-check.selected { background: #1A2D45; border-color: #1A2D45; }
+    .bs-option-check.selected::after { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+    .bs-action { padding: 8px 16px 4px; }
+    .bs-confirm-btn {
+      width: 100%; padding: 14px; background: #1A2D45;
+      border: none; border-radius: 12px; font-family: inherit;
+      font-size: 14px; font-weight: 700; color: #fff; cursor: pointer;
+    }
+
+    /* Date picker sheet */
+    .bs-date-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; padding: 4px 16px 8px; }
+    .bs-date-day-label { font-size: 10px; font-weight: 600; color: #94a3b8; text-align: center; padding: 4px 0; }
+    .bs-date-cell {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; font-size: 12.5px; font-weight: 500; color: #1e293b;
+      cursor: pointer; transition: background 0.12s;
+    }
+    .bs-date-cell:hover { background: #f1f5f9; }
+    .bs-date-cell.selected { background: #1A2D45; color: #fff; font-weight: 700; }
+    .bs-date-cell.today { border: 1.5px solid #0077b6; color: #0077b6; }
+    .bs-date-cell.other-month { color: #c8d3df; }
+    .bs-date-cell.disabled { color: #e2e8f0; cursor: default; pointer-events: none; }
+    .bs-month-nav { display: flex; align-items: center; justify-content: space-between; padding: 4px 20px 8px; }
+    .bs-month-label { font-size: 13px; font-weight: 700; color: #0f172a; }
+    .bs-month-btn { width: 28px; height: 28px; border-radius: 8px; background: #f1f5f9; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .bs-month-btn i, .bs-month-btn svg { width: 14px; height: 14px; color: #475569; }
+
+    /* Sticky action bar (medication detail) */
+    .mdet-sticky-bar {
+      display: none; gap: 10px;
+      padding: 12px 16px 10px;
+      background: #fff;
+      border-top: 1px solid #f1f5f9;
+      flex-shrink: 0;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
+    }
+    .mdet-sticky-bar.visible { display: flex; }
+
+    /* ── Care Plan Detail Screen ───────────────────────────── */
+    .detail-section {
+      background: #fff; border-radius: 18px;
+      margin-bottom: 12px; border: 1px solid #f1f5f9;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+    }
+    .detail-section-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 16px 18px 14px; border-bottom: 1px solid #f5f7fa;
+    }
+    .detail-section-icon {
+      width: 34px; height: 34px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .detail-section-icon i, .detail-section-icon svg { width: 15px; height: 15px; }
+    .detail-section-title { font-size: 13.5px; font-weight: 700; color: #0f172a; letter-spacing: -0.2px; }
+
+    /* Overview */
+    .detail-overview { padding: 18px 18px 14px; }
+    .overview-name { font-size: 15px; font-weight: 800; color: #0f172a; letter-spacing: -0.3px; margin-bottom: 8px; }
+    .overview-desc { font-size: 12.5px; color: #64748b; line-height: 1.65; margin-bottom: 16px; }
+    .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .overview-item { background: #f8fafc; border-radius: 11px; padding: 12px 14px; }
+    .overview-item-label { font-size: 9.5px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 5px; }
+    .overview-item-val { font-size: 12.5px; font-weight: 700; color: #0f172a; }
+
+    /* Goals — structured cards */
+    .goals-list { padding: 6px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
+
+    .goal-card { border: 1px solid #f1f5f9; border-radius: 14px; overflow: hidden; background: #fff; }
+
+    .goal-card-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 10px; padding: 14px 14px 10px;
+    }
+    .goal-card-title { font-size: 13px; font-weight: 700; color: #0f172a; line-height: 1.4; flex: 1; }
+    .goal-category-badge {
+      font-size: 10px; font-weight: 600; padding: 3px 9px;
+      border-radius: 20px; border: 1px solid; white-space: nowrap;
+      flex-shrink: 0; margin-top: 1px;
+    }
+
+    .goal-details-block { padding: 0 14px 12px; }
+    .goal-details-label { font-size: 9.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+    .goal-details-text { font-size: 11.5px; color: #64748b; line-height: 1.6; }
+
+    .goal-fields-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: #f1f5f9;
+      border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;
+    }
+    .goal-field { background: #fff; padding: 11px 14px; }
+    .goal-field-label { font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+    .goal-field-val { font-size: 12px; font-weight: 700; color: #0f172a; }
+
+    /* Activities + Medications — stacked vertically */
+    .goal-split { display: flex; flex-direction: column; gap: 1px; background: #f1f5f9; border-top: 1px solid #f1f5f9; }
+    .goal-sub-section { background: #fff; padding: 14px 14px 12px; }
+    .goal-sub-section + .goal-sub-section { border-top: 1px solid #f5f7fa; }
+
+    .goal-sub-label {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .goal-sub-label i, .goal-sub-label svg { color: #94a3b8; }
+    .goal-sub-count { background: #f1f5f9; color: #64748b; border-radius: 10px; padding: 1px 6px; font-size: 9.5px; font-weight: 700; }
+
+    .goal-sub-item {
+      display: flex; align-items: center; gap: 10px;
+      background: #f8fafc; border-radius: 10px; padding: 10px 12px;
+      margin-bottom: 6px;
+    }
+    .goal-sub-item:last-child { margin-bottom: 0; }
+    .goal-sub-item-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .goal-sub-item-icon i, .goal-sub-item-icon svg { width: 13px; height: 13px; }
+    .goal-sub-item-body { flex: 1; min-width: 0; }
+    .goal-sub-item-name { font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 2px; }
+    .goal-sub-item-detail { font-size: 11px; color: #64748b; }
+    .goal-sub-type-badge { font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
+    .goal-type-activity { background: #eff6ff; color: #2563eb; }
+    .goal-type-med { background: #f3e8ff; color: #7c3aed; }
+    .goal-sub-empty { font-size: 11.5px; color: #cbd5e1; padding: 4px 0; }
+
+    /* Medication sub-tabs */
+    .med-tab-row {
+      display: flex; gap: 4px; background: #f1f5f9;
+      border-radius: 10px; padding: 4px; margin: 14px 18px 14px;
+    }
+    .med-tab-btn {
+      flex: 1; padding: 8px 0; border-radius: 8px;
+      border: none; background: none; font-family: inherit;
+      font-size: 12.5px; font-weight: 500; color: #64748b;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .med-tab-btn.active { background: #fff; color: #1A2D45; font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+
+    /* Medication panel + card */
+    .med-panel { display: none; padding: 0 18px 18px; }
+    .med-panel.active { display: block; }
+    .med-card { border: 1px solid #f1f5f9; border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+    .med-card:last-child { margin-bottom: 0; }
+    .med-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .med-icon { width: 38px; height: 38px; border-radius: 11px; background: #eff6ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .med-icon i, .med-icon svg { width: 16px; height: 16px; color: #2563eb; }
+    .med-name { font-size: 13.5px; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
+    .med-dosage { font-size: 11.5px; color: #64748b; }
+    .med-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .med-field { background: #f8fafc; border-radius: 9px; padding: 9px 11px; }
+    .med-field-label { font-size: 9.5px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px; }
+    .med-field-val { font-size: 12px; font-weight: 600; color: #334155; }
+    .med-prescribed { display: flex; align-items: center; gap: 7px; padding-top: 12px; margin-top: 12px; border-top: 1px solid #f1f5f9; font-size: 11.5px; color: #64748b; }
+    .med-prescribed i, .med-prescribed svg { color: #94a3b8; flex-shrink: 0; }
+    .med-prescribed strong { color: #1A2D45; font-weight: 600; }
+
+    /* Program enrolled */
+    .prog-enrolled-card { margin: 0 18px 18px; border: 1px solid #f1f5f9; border-radius: 14px; overflow: hidden; }
+    .prog-enrolled-top { background: linear-gradient(135deg, #1A2D45, #2a4568); padding: 16px 18px 14px; display: flex; align-items: center; gap: 10px; }
+    .prog-enrolled-badge { font-size: 11px; font-weight: 800; color: #fff; background: rgba(255,255,255,0.15); border-radius: 6px; padding: 4px 9px; letter-spacing: 0.5px; }
+    .prog-enrolled-name { font-size: 13px; font-weight: 700; color: #fff; }
+    .prog-enrolled-body { padding: 16px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .prog-enrolled-item-label { font-size: 9.5px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 5px; }
+    .prog-enrolled-item-val { font-size: 13px; font-weight: 700; color: #0f172a; }
+
+    /* Care team */
+    .team-list { padding: 4px 18px 16px; }
+    .team-member { display: flex; align-items: center; gap: 13px; padding: 13px 0; border-bottom: 1px solid #f5f7fa; }
+    .team-member:last-child { border-bottom: none; padding-bottom: 0; }
+    .team-avatar { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .ta-primary { background: linear-gradient(135deg, #1A2D45, #2a4568); }
+    .ta-rn { background: linear-gradient(135deg, #0c5275, #0a7db5); }
+    .ta-dhn { background: linear-gradient(135deg, #2d6a4f, #52b788); }
+    .team-info { flex: 1; min-width: 0; }
+    .team-name { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
+    .team-role { font-size: 11.5px; color: #64748b; }
+    .team-role-badge { font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 6px; flex-shrink: 0; }
+    .trb-primary { background: #EEF2F8; color: #1A2D45; }
+    .trb-rn { background: #e0f2fe; color: #0369a1; }
+    .trb-dhn { background: #dcfce7; color: #16a34a; }
+
+    /* Activities */
+    .activity-list { padding: 4px 18px 16px; }
+    .activity-item { display: flex; align-items: center; gap: 13px; padding: 12px 0; border-bottom: 1px solid #f5f7fa; }
+    .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .activity-icon { width: 34px; height: 34px; border-radius: 10px; background: #f8fafc; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .activity-icon i, .activity-icon svg { width: 14px; height: 14px; color: #475569; }
+    .activity-text { font-size: 12.5px; font-weight: 600; color: #334155; flex: 1; }
+    .activity-freq { font-size: 11px; color: #94a3b8; font-weight: 500; }
+
+    /* ── Medication Module ─────────────────────────────────── */
+    .mlist-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .mlist-count-text { font-size: 12.5px; color: #64748b; font-weight: 500; }
+    .mlist-add-btn {
+      display: flex; align-items: center; gap: 5px;
+      background: #1A2D45; border: none; border-radius: 10px;
+      padding: 8px 13px; font-family: inherit;
+      font-size: 12px; font-weight: 600; color: #fff; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .mlist-add-btn:hover { opacity: 0.88; }
+    .mlist-add-btn i, .mlist-add-btn svg { width: 13px; height: 13px; }
+
+    .mlist-card {
+      background: #fff; border-radius: 18px;
+      padding: 16px; margin-bottom: 10px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+      cursor: pointer; transition: all 0.18s;
+    }
+    .mlist-card:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+    .mlist-card:active { transform: scale(0.99); }
+
+    .mlist-card-top { display: flex; align-items: flex-start; gap: 13px; margin-bottom: 14px; }
+    .mlist-icon {
+      width: 44px; height: 44px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .mlist-icon i, .mlist-icon svg { width: 20px; height: 20px; }
+    .mlist-info { flex: 1; min-width: 0; }
+    .mlist-name { font-size: 14.5px; font-weight: 800; color: #0f172a; letter-spacing: -0.3px; margin-bottom: 3px; }
+    .mlist-dosage-text { font-size: 12px; color: #64748b; }
+    .mlist-form-badge { font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 7px; flex-shrink: 0; margin-top: 1px; }
+    .mfb-tablet  { background: #eff6ff; color: #2563eb; }
+    .mfb-capsule { background: #fdf4ff; color: #9333ea; }
+    .mfb-syrup   { background: #fff7ed; color: #ea580c; }
+
+    .mlist-card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 12px; border-top: 1px solid #f5f7fa;
+    }
+    .mlist-freq { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #64748b; }
+    .mlist-freq i, .mlist-freq svg { width: 13px; height: 13px; color: #94a3b8; }
+
+    .mlist-status { display: flex; align-items: center; gap: 5px; }
+    .mlist-sdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .ms-active .mlist-sdot { background: #22c55e; box-shadow: 0 0 0 2.5px rgba(34,197,94,0.18); }
+    .ms-active .mlist-slabel { font-size: 11.5px; font-weight: 600; color: #16a34a; }
+    .ms-inactive .mlist-sdot { background: #94a3b8; }
+    .ms-inactive .mlist-slabel { font-size: 11.5px; font-weight: 600; color: #94a3b8; }
+
+    /* Medication Detail */
+    .mdet-hero {
+      background: #fff; border-radius: 18px;
+      padding: 18px; margin-bottom: 12px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+    }
+    .mdet-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .mdet-hero-icon {
+      width: 50px; height: 50px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .mdet-hero-icon i, .mdet-hero-icon svg { width: 22px; height: 22px; }
+    .mdet-hero-name { font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; margin-bottom: 3px; }
+    .mdet-hero-sub { font-size: 12.5px; color: #64748b; }
+    .mdet-hero-status { display: flex; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid #f5f7fa; margin-top: 10px; }
+    .mdet-sdot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 2.5px rgba(34,197,94,0.18); }
+    .mdet-slabel { font-size: 12px; font-weight: 600; color: #16a34a; }
+
+    .mdet-section {
+      background: #fff; border-radius: 18px;
+      margin-bottom: 12px; border: 1px solid #f1f5f9;
+      overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+    }
+    .mdet-section-hdr {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 18px 12px; border-bottom: 1px solid #f5f7fa;
+    }
+    .mdet-section-ico { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .mdet-section-ico i, .mdet-section-ico svg { width: 14px; height: 14px; }
+    .mdet-section-title { font-size: 13.5px; font-weight: 700; color: #0f172a; }
+
+    .mdet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px 18px; }
+    .mdet-field { background: #f8fafc; border-radius: 11px; padding: 11px 13px; }
+    .mdet-field-label { font-size: 9.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+    .mdet-field-val { font-size: 12.5px; font-weight: 700; color: #0f172a; line-height: 1.3; }
+
+    .mdet-instruction-body { padding: 16px 18px; }
+    .mdet-instruction-text { font-size: 12.5px; color: #475569; line-height: 1.7; }
+
+    .mdet-actions { display: flex; gap: 10px; margin-bottom: 18px; }
+    .mdet-btn {
+      flex: 1; height: 44px; border-radius: 13px;
+      border: none; font-family: inherit; font-size: 13px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+      transition: all 0.15s;
+    }
+    .mdet-btn i, .mdet-btn svg { width: 14px; height: 14px; }
+    .mdet-btn-edit { background: #EEF2F8; color: #1A2D45; }
+    .mdet-btn-edit:hover { background: #dde5f0; }
+    .mdet-btn-delete { background: #fef2f2; color: #dc2626; }
+    .mdet-btn-delete:hover { background: #fee2e2; }
+
     /* Patient vitals strip */
     .vitals-row { display: flex; gap: 8px; margin-bottom: 18px; }
     .vital-card {
@@ -416,42 +1103,69 @@
     .vital-unit { font-size: 9px; font-weight: 600; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.5px; }
     .vital-label { font-size: 10.5px; color: var(--muted-foreground); margin-top: 4px; }
 
-    /* ── Bottom Navigation ──────────────────────────────────── */
+    /* ── Bottom Navigation (minimal & aesthetic) ────────────── */
     .bottom-nav {
       background: #fff;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid #f1f5f9;
       display: flex; align-items: stretch;
-      padding: 0 4px;
+      padding: 0 4px 10px;
       height: 72px;
       flex-shrink: 0;
       border-radius: 0 0 44px 44px;
+      box-shadow: 0 -1px 0 #f1f5f9, 0 -8px 32px rgba(0,0,0,0.04);
     }
     .nav-item {
       flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+      align-items: center; justify-content: flex-end;
+      padding-bottom: 6px;
       gap: 4px; cursor: pointer;
       border: none; background: none;
-      padding: 10px 4px 14px;
       font-family: inherit;
       transition: opacity 0.15s;
       position: relative;
     }
-    .nav-item:hover { opacity: 0.75; }
+    .nav-item:active { opacity: 0.6; }
+
+    /* Thin accent line at top — only active */
+    .nav-item::before {
+      content: '';
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 2.5px;
+      background: var(--primary);
+      border-radius: 0 0 4px 4px;
+      transition: width 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .nav-item.active::before { width: 24px; }
+
+    /* Icon */
     .nav-icon {
-      width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: auto;
     }
-    .nav-label { font-size: 10.5px; font-weight: 500; color: var(--muted-foreground); letter-spacing: -0.1px; }
-    /* Active state */
+    .nav-icon i,
+    .nav-icon svg {
+      width: 20px; height: 20px;
+      color: #b0bec5;
+      transition: color 0.2s, transform 0.2s;
+      stroke-width: 1.7;
+    }
+
+    /* Label */
+    .nav-label {
+      font-size: 9.5px; font-weight: 500;
+      color: #b0bec5; letter-spacing: 0.1px;
+      transition: color 0.2s, font-weight 0.2s;
+      line-height: 1;
+    }
+
+    /* Active state — just color, no backgrounds */
+    .nav-item.active .nav-icon i,
+    .nav-item.active .nav-icon svg { color: var(--primary); transform: translateY(-1px); }
     .nav-item.active .nav-label { color: var(--primary); font-weight: 700; }
-    .nav-item.active .nav-icon svg { color: var(--primary); }
-    .nav-item.active .nav-active-pill {
-      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-      width: 28px; height: 3px; background: var(--primary);
-      border-radius: 0 0 3px 3px;
-    }
+
     .nav-active-pill { display: none; }
-    .nav-item.active .nav-active-pill { display: block; }
-    .nav-icon svg { color: #94a3b8; transition: color 0.15s; }
   </style>
 </head>
 <body>
@@ -579,156 +1293,806 @@
       <!-- ════════════════ CARE PLAN VIEW ════════════════ -->
       <div class="care-view" id="view-careplan">
 
-        <!-- Header -->
+        <!-- Header (redesigned) -->
         <div class="care-header">
+          <!-- Status bar -->
           <div class="care-status-bar">
             <span class="care-status-time">9:41</span>
             <div class="care-status-icons">
-              <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="4" width="3" height="8" rx="1" fill="white" opacity="0.4"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" fill="white" opacity="0.6"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="white" opacity="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="white"/></svg>
-              <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 3C9.8 3 11.4 3.7 12.6 4.8L14 3.4C12.4 1.9 10.3 1 8 1 5.7 1 3.6 1.9 2 3.4L3.4 4.8C4.6 3.7 6.2 3 8 3Z" fill="white" opacity="0.5"/><path d="M8 5.5C9.2 5.5 10.3 6 11.1 6.8L12.5 5.4C11.3 4.3 9.7 3.5 8 3.5 6.3 3.5 4.7 4.3 3.5 5.4L4.9 6.8C5.7 6 6.8 5.5 8 5.5Z" fill="white" opacity="0.75"/><circle cx="8" cy="10" r="1.5" fill="white"/></svg>
-              <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="white" stroke-opacity="0.35"/><rect x="2" y="2" width="17" height="8" rx="2" fill="white"/><path d="M23 4.5V7.5C23.8 7.2 24.5 6.5 24.5 6 24.5 5.5 23.8 4.8 23 4.5Z" fill="white" opacity="0.4"/></svg>
+              <!-- Signal bars -->
+              <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="4" width="3" height="8" rx="1" fill="#0f172a" opacity="0.3"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" fill="#0f172a" opacity="0.5"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="#0f172a" opacity="0.75"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="#0f172a"/></svg>
+              <!-- Wifi -->
+              <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 3C9.8 3 11.4 3.7 12.6 4.8L14 3.4C12.4 1.9 10.3 1 8 1 5.7 1 3.6 1.9 2 3.4L3.4 4.8C4.6 3.7 6.2 3 8 3Z" fill="#0f172a" opacity="0.4"/><path d="M8 5.5C9.2 5.5 10.3 6 11.1 6.8L12.5 5.4C11.3 4.3 9.7 3.5 8 3.5 6.3 3.5 4.7 4.3 3.5 5.4L4.9 6.8C5.7 6 6.8 5.5 8 5.5Z" fill="#0f172a" opacity="0.65"/><circle cx="8" cy="10" r="1.5" fill="#0f172a"/></svg>
+              <!-- Battery -->
+              <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#0f172a" stroke-opacity="0.3"/><rect x="2" y="2" width="17" height="8" rx="2" fill="#0f172a" opacity="0.75"/><path d="M23 4.5V7.5C23.8 7.2 24.5 6.5 24.5 6 24.5 5.5 23.8 4.8 23 4.5Z" fill="#0f172a" opacity="0.35"/></svg>
             </div>
           </div>
+
+          <!-- Main header row (Home tab) -->
           <div class="care-header-row">
             <div class="care-greeting">
-              <div class="care-greeting-hi">Hello, Dr. Johnson 👋</div>
-              <div class="care-greeting-sub">Health Telematix · 3 alerts today</div>
+              <div class="care-greeting-sub">Good morning 🌤️</div>
+              <div class="care-greeting-hi">Sarah Mitchell</div>
             </div>
             <div class="header-actions">
               <div class="header-icon-btn">
-                <div class="notif-dot"></div>
-                <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-                  <path d="M8.5 1.5C8.5 1.5 8.5 1.5 8.5 1.5C5.46 1.5 3 3.96 3 7V10.5L1.5 12H15.5L14 10.5V7C14 3.96 11.54 1.5 8.5 1.5Z" stroke="white" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
-                  <path d="M6.5 12C6.5 13.1 7.4 14 8.5 14C9.6 14 10.5 13.1 10.5 12" stroke="white" stroke-width="1.4" stroke-linecap="round" fill="none"/>
-                </svg>
+                <div class="notif-badge"></div>
+                <i data-lucide="bell" style="width:18px;height:18px;color:#475569;stroke-width:2"></i>
               </div>
-              <div class="user-avatar">DJ</div>
+              <div class="user-avatar">SM</div>
             </div>
           </div>
-          <div class="header-search">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/>
-              <path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            </svg>
-            <span>Search patients or care plans…</span>
+
+          <!-- Module header row (other tabs) -->
+          <div class="module-header-row">
+            <button class="module-back-btn" id="module-back-btn" onclick="backFromDetail()">
+              <i data-lucide="chevron-left" style="width:16px;height:16px;stroke-width:2.5"></i>
+            </button>
+            <div class="module-title-text" id="module-title-text">Care Plan</div>
+            <button class="module-add-btn" id="module-add-btn" onclick="showAddMedication()">
+              <i data-lucide="plus" style="stroke-width:2.5"></i>
+              Add New
+            </button>
           </div>
         </div>
 
         <!-- Body -->
         <div class="care-body">
 
-          <!-- Active Programs -->
-          <div class="section-label" style="margin-top:14px">Active Programs</div>
-          <div class="program-row">
-            <div class="program-chip pc-apcm">
-              <div class="pc-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L9 5H13L10 8L11 12L7 9.5L3 12L4 8L1 5H5L7 1Z" fill="white" opacity="0.9"/></svg></div>
-              <div class="pc-count">12</div>
-              <div class="pc-label">APCM</div>
-              <div class="pc-sub">patients</div>
-            </div>
-            <div class="program-chip pc-rpm">
-              <div class="pc-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7H3L4.5 3.5L6 10L7.5 5L9 8.5L10 7H13" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-              <div class="pc-count">8</div>
-              <div class="pc-label">RPM</div>
-              <div class="pc-sub">monitored</div>
-            </div>
-            <div class="program-chip pc-bhi">
-              <div class="pc-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2C4.8 2 3 3.8 3 6C3 8.8 7 12 7 12C7 12 11 8.8 11 6C11 3.8 9.2 2 7 2Z" stroke="white" stroke-width="1.3" fill="none"/><circle cx="7" cy="6" r="1.5" fill="white" opacity="0.8"/></svg></div>
-              <div class="pc-count">5</div>
-              <div class="pc-label">BHI</div>
-              <div class="pc-sub">enrolled</div>
+          <!-- ── Dashboard: Coming Soon ── -->
+          <div id="content-dashboard" class="content-screen">
+            <div class="cs-wrap">
+              <div class="cs-icon-ring">
+                <i data-lucide="layout-dashboard"></i>
+              </div>
+              <div class="cs-text">
+                <div class="cs-title">Dashboard</div>
+                <div class="cs-desc">Your health overview is on<br>its way. Stay tuned.</div>
+              </div>
+              <div class="cs-badge">
+                <i data-lucide="zap"></i>
+                Coming soon
+              </div>
             </div>
           </div>
 
-          <!-- Today's vitals summary -->
-          <div class="section-label">Patient Vitals Today</div>
-          <div class="vitals-row" style="margin-bottom:18px">
-            <div class="vital-card">
-              <div class="vital-val alert">148/92</div>
-              <div class="vital-unit">mmHg</div>
-              <div class="vital-label">Blood Pressure</div>
-            </div>
-            <div class="vital-card">
-              <div class="vital-val">97.2</div>
-              <div class="vital-unit">bpm avg</div>
-              <div class="vital-label">Heart Rate</div>
-            </div>
-            <div class="vital-card">
-              <div class="vital-val">98.6</div>
-              <div class="vital-unit">% SpO₂</div>
-              <div class="vital-label">Oxygen</div>
-            </div>
-          </div>
+          <!-- ── Care Plan ── -->
+          <div id="content-careplan" class="content-screen active">
 
-          <!-- Tasks -->
-          <div class="section-label">Today's Care Tasks</div>
+            <!-- Tab switcher -->
+            <div class="cp-tab-row">
+              <button class="cp-tab-btn active" onclick="switchCpTab(this,'cp-current')">Current</button>
+              <button class="cp-tab-btn" onclick="switchCpTab(this,'cp-past')">Past</button>
+            </div>
 
-          <div class="task-card">
-            <div class="task-icon ti-blue">
-              <svg viewBox="0 0 16 16" fill="none"><path d="M8 2C5.8 2 4 3.8 4 6C4 9.2 8 13 8 13C8 13 12 9.2 12 6C12 3.8 10.2 2 8 2Z" stroke="#3b82f6" stroke-width="1.4" fill="none"/><circle cx="8" cy="6" r="1.5" fill="#3b82f6"/></svg>
-            </div>
-            <div class="task-body">
-              <div class="task-title">Review BP readings — M. Thompson</div>
-              <div class="task-meta">APCM · Due 10:30 AM</div>
-            </div>
-            <span class="task-badge badge-urgent">Urgent</span>
-          </div>
+            <!-- ── Current Plans ── -->
+            <div id="cp-current" class="cp-panel active">
 
-          <div class="task-card">
-            <div class="task-icon ti-orange">
-              <svg viewBox="0 0 16 16" fill="none"><path d="M3 5H13M3 8H10M3 11H8" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </div>
-            <div class="task-body">
-              <div class="task-title">Care plan update — J. Rivera</div>
-              <div class="task-meta">RPM · Due 12:00 PM</div>
-            </div>
-            <span class="task-badge badge-today">Today</span>
-          </div>
+              <div class="cp-card" onclick="showCpDetail(this)">
+                <div class="cp-card-top">
+                  <div class="cp-card-icon" style="background:#EEF2F8;">
+                    <i data-lucide="heart-pulse" style="width:18px;height:18px;color:#1A2D45;stroke-width:1.8"></i>
+                  </div>
+                  <div class="cp-card-body">
+                    <div class="cp-card-title">Hypertension Management Plan</div>
+                    <div class="cp-card-prog">Enrolled · APCM Program</div>
+                  </div>
+                  <i data-lucide="chevron-right" style="width:16px;height:16px;color:#cbd5e1;flex-shrink:0;stroke-width:2.2"></i>
+                </div>
+                <div class="cp-card-footer">
+                  <span class="cp-prog-badge cp-badge-apcm">APCM</span>
+                  <span class="cp-status-dot active-dot"></span>
+                  <span class="cp-status-active">Active</span>
+                  <span class="cp-date">
+                    <i data-lucide="calendar" style="width:11px;height:11px;stroke-width:2"></i>
+                    Updated May 20, 2026
+                  </span>
+                </div>
+              </div>
 
-          <div class="task-card">
-            <div class="task-icon ti-green">
-              <svg viewBox="0 0 16 16" fill="none"><path d="M4 8L6.5 10.5L12 5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <div class="task-body">
-              <div class="task-title">Monthly check-in — P. Williams</div>
-              <div class="task-meta">BHI · Completed 9:00 AM</div>
-            </div>
-            <span class="task-badge badge-done">Done</span>
-          </div>
+              <div class="cp-card" onclick="showCpDetail(this)">
+                <div class="cp-card-top">
+                  <div class="cp-card-icon" style="background:#e0f2fe;">
+                    <i data-lucide="activity" style="width:18px;height:18px;color:#0369a1;stroke-width:1.8"></i>
+                  </div>
+                  <div class="cp-card-body">
+                    <div class="cp-card-title">Type 2 Diabetes Care Plan</div>
+                    <div class="cp-card-prog">Enrolled · RPM Program</div>
+                  </div>
+                  <i data-lucide="chevron-right" style="width:16px;height:16px;color:#cbd5e1;flex-shrink:0;stroke-width:2.2"></i>
+                </div>
+                <div class="cp-card-footer">
+                  <span class="cp-prog-badge cp-badge-rpm">RPM</span>
+                  <span class="cp-status-dot active-dot"></span>
+                  <span class="cp-status-active">Active</span>
+                  <span class="cp-date">
+                    <i data-lucide="calendar" style="width:11px;height:11px;stroke-width:2"></i>
+                    Updated May 15, 2026
+                  </span>
+                </div>
+              </div>
 
-          <div class="task-card" style="margin-bottom:16px">
-            <div class="task-icon ti-purple">
-              <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="5" width="10" height="8" rx="2" stroke="#a855f7" stroke-width="1.4" fill="none"/><path d="M5 5V4C5 2.9 5.9 2 7 2H9C10.1 2 11 2.9 11 4V5" stroke="#a855f7" stroke-width="1.4" fill="none"/><path d="M6 9H10M8 7V11" stroke="#a855f7" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div><!-- /cp-current -->
+
+            <!-- ── Past Plans ── -->
+            <div id="cp-past" class="cp-panel">
+
+              <div class="cp-card cp-card-past" onclick="">
+                <div class="cp-card-top">
+                  <div class="cp-card-icon" style="background:#f1f5f9;">
+                    <i data-lucide="heart-pulse" style="width:18px;height:18px;color:#94a3b8;stroke-width:1.8"></i>
+                  </div>
+                  <div class="cp-card-body">
+                    <div class="cp-card-title" style="color:#475569;">Cardiovascular Recovery Plan</div>
+                    <div class="cp-card-prog">Enrolled · APCM Program</div>
+                  </div>
+                  <i data-lucide="chevron-right" style="width:16px;height:16px;color:#cbd5e1;flex-shrink:0;stroke-width:2.2"></i>
+                </div>
+                <div class="cp-card-footer">
+                  <span class="cp-prog-badge cp-badge-past">APCM</span>
+                  <span class="cp-status-dot completed-dot"></span>
+                  <span class="cp-status-completed">Completed</span>
+                  <span class="cp-date">
+                    <i data-lucide="calendar-check" style="width:11px;height:11px;stroke-width:2"></i>
+                    Mar 10, 2026
+                  </span>
+                </div>
+              </div>
+
+              <div class="cp-card cp-card-past" onclick="">
+                <div class="cp-card-top">
+                  <div class="cp-card-icon" style="background:#f1f5f9;">
+                    <i data-lucide="scale" style="width:18px;height:18px;color:#94a3b8;stroke-width:1.8"></i>
+                  </div>
+                  <div class="cp-card-body">
+                    <div class="cp-card-title" style="color:#475569;">Weight Management Program</div>
+                    <div class="cp-card-prog">Enrolled · BHI Program</div>
+                  </div>
+                  <i data-lucide="chevron-right" style="width:16px;height:16px;color:#cbd5e1;flex-shrink:0;stroke-width:2.2"></i>
+                </div>
+                <div class="cp-card-footer">
+                  <span class="cp-prog-badge cp-badge-past">BHI</span>
+                  <span class="cp-status-dot completed-dot"></span>
+                  <span class="cp-status-completed">Completed</span>
+                  <span class="cp-date">
+                    <i data-lucide="calendar-check" style="width:11px;height:11px;stroke-width:2"></i>
+                    Jan 5, 2026
+                  </span>
+                </div>
+              </div>
+
+              <div class="cp-card cp-card-past" onclick="">
+                <div class="cp-card-top">
+                  <div class="cp-card-icon" style="background:#f1f5f9;">
+                    <i data-lucide="activity" style="width:18px;height:18px;color:#94a3b8;stroke-width:1.8"></i>
+                  </div>
+                  <div class="cp-card-body">
+                    <div class="cp-card-title" style="color:#475569;">Cholesterol Control Plan</div>
+                    <div class="cp-card-prog">Enrolled · RPM Program</div>
+                  </div>
+                  <i data-lucide="chevron-right" style="width:16px;height:16px;color:#cbd5e1;flex-shrink:0;stroke-width:2.2"></i>
+                </div>
+                <div class="cp-card-footer">
+                  <span class="cp-prog-badge cp-badge-past">RPM</span>
+                  <span class="cp-status-dot completed-dot"></span>
+                  <span class="cp-status-completed">Completed</span>
+                  <span class="cp-date">
+                    <i data-lucide="calendar-check" style="width:11px;height:11px;stroke-width:2"></i>
+                    Oct 22, 2025
+                  </span>
+                </div>
+              </div>
+
+            </div><!-- /cp-past -->
+
+          </div><!-- /content-careplan -->
+
+          <!-- ── Care Plan Detail ── -->
+          <div id="content-careplan-detail" class="content-screen" style="flex-direction:column;">
+
+            <!-- Section 1: Care Plan Overview -->
+            <div class="detail-section">
+              <div class="detail-section-header">
+                <div class="detail-section-icon" style="background:#EEF2F8;">
+                  <i data-lucide="file-text" style="color:#1A2D45;stroke-width:2"></i>
+                </div>
+                <div class="detail-section-title">Care Plan Overview</div>
+              </div>
+              <div class="detail-overview">
+                <div class="overview-name" id="detail-plan-name">Hypertension Management Plan</div>
+                <div class="overview-desc">A comprehensive plan to monitor and manage blood pressure through lifestyle modifications, medication adherence, and regular care team touchpoints.</div>
+                <div class="overview-grid">
+                  <div class="overview-item">
+                    <div class="overview-item-label">Touchpoint</div>
+                    <div class="overview-item-val">Bi-weekly</div>
+                  </div>
+                  <div class="overview-item">
+                    <div class="overview-item-label">Start Date</div>
+                    <div class="overview-item-val">Jan 10, 2026</div>
+                  </div>
+                  <div class="overview-item">
+                    <div class="overview-item-label">End Date</div>
+                    <div class="overview-item-val">Jul 10, 2026</div>
+                  </div>
+                  <div class="overview-item">
+                    <div class="overview-item-label">Status</div>
+                    <div class="overview-item-val" style="color:#16a34a;">Active</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="task-body">
-              <div class="task-title">Medication review — S. Chen</div>
-              <div class="task-meta">RPM · Due 3:00 PM</div>
+
+            <!-- Section 2: Goals -->
+            <div class="detail-section">
+              <div class="detail-section-header">
+                <div class="detail-section-icon" style="background:#f0fdf4;">
+                  <i data-lucide="target" style="color:#16a34a;stroke-width:2"></i>
+                </div>
+                <div class="detail-section-title">Goals</div>
+              </div>
+              <div class="goals-list">
+
+                <!-- Goal 1 -->
+                <div class="goal-card">
+                  <div class="goal-card-header">
+                    <div class="goal-card-title">Maintain systolic BP below 130 mmHg</div>
+                    <span class="goal-category-badge" style="background:#fef2f2;color:#dc2626;border-color:#fecaca;">Hypertension</span>
+                  </div>
+                  <div class="goal-details-block">
+                    <div class="goal-details-label">Goal Details</div>
+                    <div class="goal-details-text">Monitor daily readings and maintain below target through medication adherence and lifestyle changes.</div>
+                  </div>
+                  <div class="goal-fields-grid">
+                    <div class="goal-field"><div class="goal-field-label">Start Date</div><div class="goal-field-val">Jan 10, 2026</div></div>
+                    <div class="goal-field"><div class="goal-field-label">End Date</div><div class="goal-field-val">Jul 10, 2026</div></div>
+                    <div class="goal-field"><div class="goal-field-label">Current</div><div class="goal-field-val">138/88</div></div>
+                    <div class="goal-field"><div class="goal-field-label">Target</div><div class="goal-field-val">130/80</div></div>
+                  </div>
+                  <div class="goal-split">
+                    <div class="goal-sub-section">
+                      <div class="goal-sub-label">
+                        <i data-lucide="activity" style="width:11px;height:11px;stroke-width:2"></i>
+                        Activities <span class="goal-sub-count">1</span>
+                      </div>
+                      <div class="goal-sub-item">
+                        <div class="goal-sub-item-icon" style="background:#eff6ff;">
+                          <i data-lucide="heart" style="color:#2563eb;stroke-width:2"></i>
+                        </div>
+                        <div class="goal-sub-item-body">
+                          <div class="goal-sub-item-name">BP Monitoring</div>
+                          <div class="goal-sub-item-detail">Daily</div>
+                        </div>
+                        <span class="goal-sub-type-badge goal-type-activity">Activity</span>
+                      </div>
+                    </div>
+                    <div class="goal-sub-section">
+                      <div class="goal-sub-label">
+                        <i data-lucide="pill" style="width:11px;height:11px;stroke-width:2"></i>
+                        Medications <span class="goal-sub-count">1</span>
+                      </div>
+                      <div class="goal-sub-item">
+                        <div class="goal-sub-item-icon" style="background:#f3e8ff;">
+                          <i data-lucide="pill" style="color:#7c3aed;stroke-width:2"></i>
+                        </div>
+                        <div class="goal-sub-item-body">
+                          <div class="goal-sub-item-name">Lisinopril</div>
+                          <div class="goal-sub-item-detail">10 mg · Once daily · Before meal</div>
+                        </div>
+                        <span class="goal-sub-type-badge goal-type-med">Med</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Goal 2 -->
+                <div class="goal-card">
+                  <div class="goal-card-header">
+                    <div class="goal-card-title">Reduce sodium intake to &lt; 2g per day</div>
+                    <span class="goal-category-badge" style="background:#f0fdf4;color:#16a34a;border-color:#bbf7d0;">Lifestyle</span>
+                  </div>
+                  <div class="goal-details-block">
+                    <div class="goal-details-label">Goal Details</div>
+                    <div class="goal-details-text">Track daily sodium via food diary to reduce fluid retention and support BP control.</div>
+                  </div>
+                  <div class="goal-fields-grid">
+                    <div class="goal-field"><div class="goal-field-label">Start Date</div><div class="goal-field-val">Jan 10, 2026</div></div>
+                    <div class="goal-field"><div class="goal-field-label">End Date</div><div class="goal-field-val">Jul 10, 2026</div></div>
+                    <div class="goal-field"><div class="goal-field-label">Current</div><div class="goal-field-val">—</div></div>
+                    <div class="goal-field"><div class="goal-field-label">Target</div><div class="goal-field-val">&lt; 2g/day</div></div>
+                  </div>
+                  <div class="goal-split">
+                    <div class="goal-sub-section">
+                      <div class="goal-sub-label">
+                        <i data-lucide="activity" style="width:11px;height:11px;stroke-width:2"></i>
+                        Activities <span class="goal-sub-count">1</span>
+                      </div>
+                      <div class="goal-sub-item">
+                        <div class="goal-sub-item-icon" style="background:#eff6ff;">
+                          <i data-lucide="utensils" style="color:#2563eb;stroke-width:2"></i>
+                        </div>
+                        <div class="goal-sub-item-body">
+                          <div class="goal-sub-item-name">Diet Tracking</div>
+                          <div class="goal-sub-item-detail">Daily</div>
+                        </div>
+                        <span class="goal-sub-type-badge goal-type-activity">Activity</span>
+                      </div>
+                    </div>
+                    <div class="goal-sub-section">
+                      <div class="goal-sub-label">
+                        <i data-lucide="pill" style="width:11px;height:11px;stroke-width:2"></i>
+                        Medications <span class="goal-sub-count">0</span>
+                      </div>
+                      <div class="goal-sub-empty">No medications linked</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Goal 3 -->
+                <div class="goal-card">
+                  <div class="goal-card-header">
+                    <div class="goal-card-title">30 min exercise, minimum 5 days/week</div>
+                    <span class="goal-category-badge" style="background:#eff6ff;color:#2563eb;border-color:#bfdbfe;">Activity</span>
+                  </div>
+                  <div class="goal-details-block">
+                    <div class="goal-details-label">Goal Details</div>
+                    <div class="goal-details-text">Progressive increase in physical activity to reduce cardiovascular risk and improve BP management.</div>
+                  </div>
+                  <div class="goal-fields-grid">
+                    <div class="goal-field"><div class="goal-field-label">Start Date</div><div class="goal-field-val">Jan 10, 2026</div></div>
+                    <div class="goal-field"><div class="goal-field-label">End Date</div><div class="goal-field-val">Jul 10, 2026</div></div>
+                    <div class="goal-field"><div class="goal-field-label">Current</div><div class="goal-field-val">3x/week</div></div>
+                    <div class="goal-field"><div class="goal-field-label">Target</div><div class="goal-field-val">5x/week</div></div>
+                  </div>
+                  <div class="goal-split">
+                    <div class="goal-sub-section">
+                      <div class="goal-sub-label">
+                        <i data-lucide="activity" style="width:11px;height:11px;stroke-width:2"></i>
+                        Activities <span class="goal-sub-count">1</span>
+                      </div>
+                      <div class="goal-sub-item">
+                        <div class="goal-sub-item-icon" style="background:#eff6ff;">
+                          <i data-lucide="footprints" style="color:#2563eb;stroke-width:2"></i>
+                        </div>
+                        <div class="goal-sub-item-body">
+                          <div class="goal-sub-item-name">Activity Report</div>
+                          <div class="goal-sub-item-detail">Daily</div>
+                        </div>
+                        <span class="goal-sub-type-badge goal-type-activity">Activity</span>
+                      </div>
+                    </div>
+                    <div class="goal-sub-section">
+                      <div class="goal-sub-label">
+                        <i data-lucide="pill" style="width:11px;height:11px;stroke-width:2"></i>
+                        Medications <span class="goal-sub-count">1</span>
+                      </div>
+                      <div class="goal-sub-item">
+                        <div class="goal-sub-item-icon" style="background:#f3e8ff;">
+                          <i data-lucide="pill" style="color:#7c3aed;stroke-width:2"></i>
+                        </div>
+                        <div class="goal-sub-item-body">
+                          <div class="goal-sub-item-name">Amlodipine</div>
+                          <div class="goal-sub-item-detail">5 mg · Once daily · After meal</div>
+                        </div>
+                        <span class="goal-sub-type-badge goal-type-med">Med</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
             </div>
-            <span class="task-badge badge-today">Today</span>
+
+
+          </div><!-- /content-careplan-detail -->
+
+          <!-- ── Medication List ── -->
+          <div id="content-medication" class="content-screen" style="flex-direction:column;">
+
+            <div style="font-size:12.5px;color:#94a3b8;font-weight:500;margin-bottom:14px;">4 medications</div>
+
+            <!-- Lisinopril -->
+            <div class="mlist-card" onclick="showMedDetail(0)">
+              <div class="mlist-card-top">
+                <div class="mlist-icon" style="background:#eff6ff;">
+                  <i data-lucide="pill" style="color:#2563eb;stroke-width:1.8"></i>
+                </div>
+                <div class="mlist-info">
+                  <div class="mlist-name">Lisinopril</div>
+                  <div class="mlist-dosage-text">10 mg · 1 tablet/day</div>
+                </div>
+                <span class="mlist-form-badge mfb-tablet">Tablet</span>
+              </div>
+              <div class="mlist-card-footer">
+                <div class="mlist-freq">
+                  <i data-lucide="clock" style="stroke-width:2"></i>
+                  Once daily · Before meal
+                </div>
+                <div class="mlist-status ms-active">
+                  <span class="mlist-sdot"></span>
+                  <span class="mlist-slabel">Active</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Amlodipine -->
+            <div class="mlist-card" onclick="showMedDetail(1)">
+              <div class="mlist-card-top">
+                <div class="mlist-icon" style="background:#fdf4ff;">
+                  <i data-lucide="pill" style="color:#9333ea;stroke-width:1.8"></i>
+                </div>
+                <div class="mlist-info">
+                  <div class="mlist-name">Amlodipine</div>
+                  <div class="mlist-dosage-text">5 mg · 1 tablet/day</div>
+                </div>
+                <span class="mlist-form-badge mfb-tablet">Tablet</span>
+              </div>
+              <div class="mlist-card-footer">
+                <div class="mlist-freq">
+                  <i data-lucide="clock" style="stroke-width:2"></i>
+                  Once daily · After meal
+                </div>
+                <div class="mlist-status ms-active">
+                  <span class="mlist-sdot"></span>
+                  <span class="mlist-slabel">Active</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Metformin -->
+            <div class="mlist-card" onclick="showMedDetail(2)">
+              <div class="mlist-card-top">
+                <div class="mlist-icon" style="background:#f0fdf4;">
+                  <i data-lucide="pill" style="color:#16a34a;stroke-width:1.8"></i>
+                </div>
+                <div class="mlist-info">
+                  <div class="mlist-name">Metformin</div>
+                  <div class="mlist-dosage-text">500 mg · 2 tablets/day</div>
+                </div>
+                <span class="mlist-form-badge mfb-tablet">Tablet</span>
+              </div>
+              <div class="mlist-card-footer">
+                <div class="mlist-freq">
+                  <i data-lucide="clock" style="stroke-width:2"></i>
+                  Twice daily · With meal
+                </div>
+                <div class="mlist-status ms-active">
+                  <span class="mlist-sdot"></span>
+                  <span class="mlist-slabel">Active</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Atorvastatin -->
+            <div class="mlist-card" onclick="showMedDetail(3)">
+              <div class="mlist-card-top">
+                <div class="mlist-icon" style="background:#fff7ed;">
+                  <i data-lucide="pill" style="color:#ea580c;stroke-width:1.8"></i>
+                </div>
+                <div class="mlist-info">
+                  <div class="mlist-name">Atorvastatin</div>
+                  <div class="mlist-dosage-text">20 mg · 1 capsule/day</div>
+                </div>
+                <span class="mlist-form-badge mfb-capsule">Capsule</span>
+              </div>
+              <div class="mlist-card-footer">
+                <div class="mlist-freq">
+                  <i data-lucide="clock" style="stroke-width:2"></i>
+                  Once daily · Evening
+                </div>
+                <div class="mlist-status ms-inactive">
+                  <span class="mlist-sdot"></span>
+                  <span class="mlist-slabel">Inactive</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /content-medication -->
+
+          <!-- ── Medication Detail ── -->
+          <div id="content-medication-detail" class="content-screen" style="flex-direction:column;">
+
+            <!-- Hero card -->
+            <div class="mdet-hero">
+              <div class="mdet-hero-top">
+                <div>
+                  <div class="mdet-hero-name" id="mdet-med-name">Lisinopril</div>
+                  <div class="mdet-hero-sub" id="mdet-med-sub">10 mg · 1 tablet/day</div>
+                </div>
+                <span class="mlist-form-badge mfb-tablet" id="mdet-form-badge">Tablet</span>
+              </div>
+              <div class="mdet-hero-status">
+                <span class="mdet-sdot" id="mdet-sdot"></span>
+                <span class="mdet-slabel" id="mdet-slabel">Active</span>
+              </div>
+            </div>
+
+            <!-- Dosage & Schedule -->
+            <div class="mdet-section">
+              <div class="mdet-section-hdr">
+                <div class="mdet-section-ico" style="background:#eff6ff;">
+                  <i data-lucide="clock" style="color:#2563eb;stroke-width:2"></i>
+                </div>
+                <div class="mdet-section-title">Dosage &amp; Schedule</div>
+              </div>
+              <div class="mdet-grid">
+                <div class="mdet-field"><div class="mdet-field-label">Dosage</div><div class="mdet-field-val" id="mdet-dosage">10 mg</div></div>
+                <div class="mdet-field"><div class="mdet-field-label">Frequency</div><div class="mdet-field-val" id="mdet-freq">Once daily</div></div>
+                <div class="mdet-field"><div class="mdet-field-label">Time of Intake</div><div class="mdet-field-val" id="mdet-time">Before meal</div></div>
+                <div class="mdet-field"><div class="mdet-field-label">Medication Form</div><div class="mdet-field-val" id="mdet-form">Tablet</div></div>
+                <div class="mdet-field"><div class="mdet-field-label">Start Date</div><div class="mdet-field-val" id="mdet-start">Jan 10, 2026</div></div>
+                <div class="mdet-field"><div class="mdet-field-label">End Date</div><div class="mdet-field-val" id="mdet-end">Jul 10, 2026</div></div>
+              </div>
+            </div>
+
+            <!-- Clinical Instructions -->
+            <div class="mdet-section">
+              <div class="mdet-section-hdr">
+                <div class="mdet-section-ico" style="background:#fff7ed;">
+                  <i data-lucide="file-text" style="color:#ea580c;stroke-width:2"></i>
+                </div>
+                <div class="mdet-section-title">Clinical Instructions</div>
+              </div>
+              <div class="mdet-instruction-body">
+                <div class="mdet-instruction-text" id="mdet-instruction">Take with a full glass of water. Avoid potassium supplements or salt substitutes. Contact your doctor if you experience persistent dry cough, dizziness, or swelling.</div>
+              </div>
+            </div>
+
+            <div style="height:8px;"></div>
+
+          </div><!-- /content-medication-detail -->
+
+          <!-- ── Add Medication ── -->
+          <div id="content-add-medication" class="content-screen" style="flex-direction:column;overflow-y:auto;">
+            <div class="addmed-body">
+
+              <!-- ① Drug Name (searchable) -->
+              <div class="af-card">
+                <div class="af-card-title">
+                  <i data-lucide="pill" style="width:14px;height:14px;color:#2563eb;stroke-width:2;"></i>
+                  Medication
+                </div>
+                <div class="af-group">
+                  <div class="af-field-label">Drug Name</div>
+                  <div class="af-search-wrap" id="addmed-search-wrap">
+                    <i data-lucide="search" class="af-field-icon" style="stroke-width:2;color:#94a3b8;"></i>
+                    <input
+                      class="af-input af-input-search"
+                      id="addmed-drug-input"
+                      type="text"
+                      placeholder="Search medication name…"
+                      autocomplete="off"
+                      oninput="onDrugSearch(this.value)"
+                      onfocus="onDrugFocus()"
+                      onblur="onDrugBlur()"
+                    />
+                    <div class="addmed-suggestions" id="addmed-suggestions"></div>
+                  </div>
+                </div>
+
+                <!-- Dosage + Pills grid -->
+                <div class="af-row" style="margin-top:12px;">
+                  <div class="af-group af-group-half">
+                    <div class="af-field-label">Dosage</div>
+                    <div class="af-select-field" onclick="openBS('bs-dosage')">
+                      <span class="af-select-val placeholder" id="addmed-dosage-val">Select</span>
+                      <i data-lucide="chevron-down" style="width:14px;height:14px;color:#b0bec5;stroke-width:2;flex-shrink:0;"></i>
+                    </div>
+                  </div>
+                  <div class="af-group af-group-half">
+                    <div class="af-field-label">No. of Pills</div>
+                    <div class="af-pill-counter">
+                      <button class="af-counter-btn" onclick="changePills(-1)">−</button>
+                      <span class="af-counter-val" id="addmed-pills-val">1</span>
+                      <button class="af-counter-btn" onclick="changePills(1)">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ② Schedule -->
+              <div class="af-card">
+                <div class="af-card-title">
+                  <i data-lucide="clock" style="width:14px;height:14px;color:#16a34a;stroke-width:2;"></i>
+                  Schedule
+                </div>
+                <div class="af-group">
+                  <div class="af-field-label">Frequency</div>
+                  <div class="af-select-field" onclick="openBS('bs-frequency')">
+                    <span class="af-select-val placeholder" id="addmed-freq-val">Select frequency</span>
+                    <i data-lucide="chevron-down" style="width:14px;height:14px;color:#b0bec5;stroke-width:2;flex-shrink:0;"></i>
+                  </div>
+                </div>
+                <div class="af-group" style="margin-top:13px;">
+                  <div class="af-field-label">Meal Time</div>
+                  <div class="af-chip-row" id="af-meal-chips">
+                    <div class="af-chip" onclick="selectMealChip(this,'Before meal')" data-val="Before meal">Before Meal</div>
+                    <div class="af-chip" onclick="selectMealChip(this,'After meal')" data-val="After meal">After Meal</div>
+                    <div class="af-chip" onclick="selectMealChip(this,'With meal')" data-val="With meal">With Meal</div>
+                    <div class="af-chip" onclick="selectMealChip(this,'Empty stomach')" data-val="Empty stomach">Empty Stomach</div>
+                  </div>
+                  <input type="hidden" id="addmed-meal-val" value="">
+                </div>
+              </div>
+
+              <!-- ③ Duration -->
+              <div class="af-card">
+                <div class="af-card-title">
+                  <i data-lucide="calendar-range" style="width:14px;height:14px;color:#7c3aed;stroke-width:2;"></i>
+                  Duration
+                </div>
+                <div class="af-row">
+                  <div class="af-group af-group-half">
+                    <div class="af-field-label">Start Date</div>
+                    <div class="af-select-field" onclick="openDateBS('bs-startdate','START DATE')">
+                      <i data-lucide="calendar" style="width:13px;height:13px;color:#b0bec5;stroke-width:2;flex-shrink:0;"></i>
+                      <span class="af-select-val placeholder" id="addmed-start-val" style="flex:1;font-size:13px;">Select</span>
+                      <i data-lucide="chevron-down" style="width:13px;height:13px;color:#b0bec5;stroke-width:2;flex-shrink:0;"></i>
+                    </div>
+                  </div>
+                  <div class="af-group af-group-half">
+                    <div class="af-field-label">End Date</div>
+                    <div class="af-select-field" onclick="openDateBS('bs-enddate','END DATE')">
+                      <i data-lucide="calendar" style="width:13px;height:13px;color:#b0bec5;stroke-width:2;flex-shrink:0;"></i>
+                      <span class="af-select-val placeholder" id="addmed-end-val" style="flex:1;font-size:13px;">Select</span>
+                      <i data-lucide="chevron-down" style="width:13px;height:13px;color:#b0bec5;stroke-width:2;flex-shrink:0;"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="height:10px;"></div>
+            </div><!-- /addmed-body -->
+
+          </div><!-- /content-add-medication -->
+
+          <!-- ── Devices List ── -->
+          <div id="content-vitals" class="content-screen" style="flex-direction:column;overflow-y:auto;">
+            <div class="dv-body">
+
+              <!-- Blood Pressure Cuff -->
+              <div class="dv-card">
+                <div class="dv-card-left">
+                  <div class="dv-icon-wrap" style="background:#eff6ff;">
+                    <i data-lucide="heart-pulse" style="color:#2563eb;stroke-width:1.8;width:20px;height:20px;"></i>
+                  </div>
+                  <div class="dv-info">
+                    <div class="dv-name">Blood Pressure Cuff</div>
+                    <div class="dv-sub">Omron HEM-7156T</div>
+                    <div class="dv-meta">
+                      <i data-lucide="refresh-cw" style="width:10px;height:10px;stroke-width:2.2;color:#22c55e;"></i>
+                      Last sync: 2 mins ago
+                    </div>
+                  </div>
+                </div>
+                <div class="dv-right">
+                  <div class="dv-status-pill dv-connected"><span class="dv-dot"></span>Connected</div>
+                  <button class="dv-remove-btn" onclick="confirmRemoveDevice(this)">
+                    <i data-lucide="trash-2" style="width:13px;height:13px;stroke-width:2;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Weight Scale -->
+              <div class="dv-card">
+                <div class="dv-card-left">
+                  <div class="dv-icon-wrap" style="background:#f0fdf4;">
+                    <i data-lucide="scale" style="color:#16a34a;stroke-width:1.8;width:20px;height:20px;"></i>
+                  </div>
+                  <div class="dv-info">
+                    <div class="dv-name">Weight Scale</div>
+                    <div class="dv-sub">Withings Body+</div>
+                    <div class="dv-meta">
+                      <i data-lucide="refresh-cw" style="width:10px;height:10px;stroke-width:2.2;color:#22c55e;"></i>
+                      Last sync: 1 hour ago
+                    </div>
+                  </div>
+                </div>
+                <div class="dv-right">
+                  <div class="dv-status-pill dv-connected"><span class="dv-dot"></span>Connected</div>
+                  <button class="dv-remove-btn" onclick="confirmRemoveDevice(this)">
+                    <i data-lucide="trash-2" style="width:13px;height:13px;stroke-width:2;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- CGM -->
+              <div class="dv-card">
+                <div class="dv-card-left">
+                  <div class="dv-icon-wrap" style="background:#fff7ed;">
+                    <i data-lucide="activity" style="color:#ea580c;stroke-width:1.8;width:20px;height:20px;"></i>
+                  </div>
+                  <div class="dv-info">
+                    <div class="dv-name">CGM Sensor</div>
+                    <div class="dv-sub">Dexcom G7</div>
+                    <div class="dv-meta">
+                      <i data-lucide="refresh-cw" style="width:10px;height:10px;stroke-width:2.2;color:#22c55e;"></i>
+                      Last sync: Just now
+                    </div>
+                  </div>
+                </div>
+                <div class="dv-right">
+                  <div class="dv-status-pill dv-connected"><span class="dv-dot"></span>Connected</div>
+                  <button class="dv-remove-btn" onclick="confirmRemoveDevice(this)">
+                    <i data-lucide="trash-2" style="width:13px;height:13px;stroke-width:2;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Pulse Oximeter -->
+              <div class="dv-card">
+                <div class="dv-card-left">
+                  <div class="dv-icon-wrap" style="background:#f5f3ff;">
+                    <i data-lucide="wind" style="color:#7c3aed;stroke-width:1.8;width:20px;height:20px;"></i>
+                  </div>
+                  <div class="dv-info">
+                    <div class="dv-name">Pulse Oximeter</div>
+                    <div class="dv-sub">Nonin 3230</div>
+                    <div class="dv-meta">
+                      <i data-lucide="refresh-cw" style="width:10px;height:10px;stroke-width:2.2;color:#22c55e;"></i>
+                      Last sync: 15 mins ago
+                    </div>
+                  </div>
+                </div>
+                <div class="dv-right">
+                  <div class="dv-status-pill dv-connected"><span class="dv-dot"></span>Connected</div>
+                  <button class="dv-remove-btn" onclick="confirmRemoveDevice(this)">
+                    <i data-lucide="trash-2" style="width:13px;height:13px;stroke-width:2;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div style="height:12px;"></div>
+            </div><!-- /dv-body -->
+          </div><!-- /content-vitals (devices) -->
+
+          <!-- ── Messages (Coming Soon) ── -->
+          <div id="content-messages" class="content-screen">
+            <div class="cs-wrap">
+              <div class="cs-icon-ring" style="background:linear-gradient(145deg,#f0fdf4,#dcfce7);">
+                <i data-lucide="message-circle" style="color:#16a34a;stroke-width:1.4"></i>
+              </div>
+              <div class="cs-text">
+                <div class="cs-title">Messages</div>
+                <div class="cs-desc">Communicate securely with your care team anytime.</div>
+              </div>
+              <div class="cs-badge"><i data-lucide="zap"></i> Coming soon</div>
+            </div>
           </div>
 
         </div><!-- /care-body -->
 
-        <!-- Bottom Navigation -->
+        <!-- Sticky bottom actions (medication detail) -->
+        <!-- Add Medication Save bar -->
+        <div class="addmed-save-bar" id="addmed-save-bar">
+          <button class="addmed-save-btn">Save Medication</button>
+        </div>
+
+        <div class="mdet-sticky-bar" id="mdet-sticky-bar">
+          <button class="mdet-btn mdet-btn-edit">
+            <i data-lucide="pencil" style="stroke-width:2"></i>
+            Edit Medication
+          </button>
+          <button class="mdet-btn mdet-btn-delete">
+            <i data-lucide="trash-2" style="stroke-width:2"></i>
+            Delete
+          </button>
+        </div>
+
+        <!-- Bottom Navigation (redesigned) -->
         <div class="bottom-nav">
 
           <button class="nav-item" onclick="setNav(this)">
             <div class="nav-active-pill"></div>
             <div class="nav-icon">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M3 9.5L10 3L17 9.5V17H13V13H7V17H3V9.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="none"/>
-              </svg>
+              <i data-lucide="layout-dashboard" style="stroke-width:1.8"></i>
             </div>
-            <span class="nav-label">Dashboard</span>
+            <span class="nav-label">Home</span>
           </button>
 
           <button class="nav-item active" onclick="setNav(this)">
             <div class="nav-active-pill"></div>
             <div class="nav-icon">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <rect x="4" y="2" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/>
-                <path d="M7 7H13M7 10H13M7 13H10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-              </svg>
+              <i data-lucide="clipboard-list" style="stroke-width:1.8"></i>
             </div>
             <span class="nav-label">Care Plan</span>
           </button>
@@ -736,10 +2100,7 @@
           <button class="nav-item" onclick="setNav(this)">
             <div class="nav-active-pill"></div>
             <div class="nav-icon">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <ellipse cx="10" cy="8" rx="3" ry="5" stroke="currentColor" stroke-width="1.6" transform="rotate(-30 10 8)" fill="none"/>
-                <ellipse cx="10" cy="8" rx="3" ry="5" stroke="currentColor" stroke-width="1.6" transform="rotate(30 10 8)" fill="none"/>
-              </svg>
+              <i data-lucide="pill" style="stroke-width:1.8"></i>
             </div>
             <span class="nav-label">Medication</span>
           </button>
@@ -747,16 +2108,112 @@
           <button class="nav-item" onclick="setNav(this)">
             <div class="nav-active-pill"></div>
             <div class="nav-icon">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <rect x="3" y="5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/>
-                <path d="M7 15V17M13 15V17M5 17H15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-                <path d="M7 9H9M11 9H13M10 7V11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-              </svg>
+              <i data-lucide="bluetooth" style="stroke-width:1.8"></i>
             </div>
             <span class="nav-label">Devices</span>
           </button>
 
+          <button class="nav-item" onclick="setNav(this)">
+            <div class="nav-active-pill"></div>
+            <div class="nav-icon">
+              <i data-lucide="message-circle" style="stroke-width:1.8"></i>
+            </div>
+            <span class="nav-label">Messages</span>
+          </button>
+
         </div>
+      <!-- ── Bottom Sheets (absolute over full care-view) ── -->
+
+      <!-- Dosage -->
+      <div class="bs-overlay" id="bs-dosage" onclick="bsOverlayClick(event,'bs-dosage')">
+        <div class="bs-sheet">
+          <div class="bs-handle"></div>
+          <div class="bs-header">
+            <div class="bs-title">Select Dosage</div>
+            <button class="bs-close" onclick="closeBS('bs-dosage')"><i data-lucide="x" style="stroke-width:2.5"></i></button>
+          </div>
+          <div class="bs-divider"></div>
+          <div class="bs-options" id="bs-dosage-opts"></div>
+          <div class="bs-action">
+            <button class="bs-confirm-btn" onclick="confirmBS('bs-dosage','addmed-dosage-val')">Confirm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Frequency -->
+      <div class="bs-overlay" id="bs-frequency" onclick="bsOverlayClick(event,'bs-frequency')">
+        <div class="bs-sheet">
+          <div class="bs-handle"></div>
+          <div class="bs-header">
+            <div class="bs-title">Select Frequency</div>
+            <button class="bs-close" onclick="closeBS('bs-frequency')"><i data-lucide="x" style="stroke-width:2.5"></i></button>
+          </div>
+          <div class="bs-divider"></div>
+          <div class="bs-options" id="bs-frequency-opts"></div>
+          <div class="bs-action">
+            <button class="bs-confirm-btn" onclick="confirmBS('bs-frequency','addmed-freq-val')">Confirm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meal Time -->
+      <div class="bs-overlay" id="bs-mealtime" onclick="bsOverlayClick(event,'bs-mealtime')">
+        <div class="bs-sheet">
+          <div class="bs-handle"></div>
+          <div class="bs-header">
+            <div class="bs-title">Meal Time</div>
+            <button class="bs-close" onclick="closeBS('bs-mealtime')"><i data-lucide="x" style="stroke-width:2.5"></i></button>
+          </div>
+          <div class="bs-divider"></div>
+          <div class="bs-options" id="bs-mealtime-opts"></div>
+          <div class="bs-action">
+            <button class="bs-confirm-btn" onclick="confirmBS('bs-mealtime','addmed-meal-val')">Confirm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Date -->
+      <div class="bs-overlay" id="bs-startdate" onclick="bsOverlayClick(event,'bs-startdate')">
+        <div class="bs-sheet">
+          <div class="bs-handle"></div>
+          <div class="bs-header">
+            <div class="bs-title">Start Date</div>
+            <button class="bs-close" onclick="closeBS('bs-startdate')"><i data-lucide="x" style="stroke-width:2.5"></i></button>
+          </div>
+          <div class="bs-divider"></div>
+          <div class="bs-month-nav">
+            <button class="bs-month-btn" onclick="bsDateNav('bs-startdate',-1)"><i data-lucide="chevron-left" style="stroke-width:2.5"></i></button>
+            <div class="bs-month-label" id="bs-startdate-month"></div>
+            <button class="bs-month-btn" onclick="bsDateNav('bs-startdate',1)"><i data-lucide="chevron-right" style="stroke-width:2.5"></i></button>
+          </div>
+          <div class="bs-date-grid" id="bs-startdate-grid"></div>
+          <div class="bs-action">
+            <button class="bs-confirm-btn" onclick="confirmDate('bs-startdate','addmed-start-val')">Confirm Date</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- End Date -->
+      <div class="bs-overlay" id="bs-enddate" onclick="bsOverlayClick(event,'bs-enddate')">
+        <div class="bs-sheet">
+          <div class="bs-handle"></div>
+          <div class="bs-header">
+            <div class="bs-title">End Date</div>
+            <button class="bs-close" onclick="closeBS('bs-enddate')"><i data-lucide="x" style="stroke-width:2.5"></i></button>
+          </div>
+          <div class="bs-divider"></div>
+          <div class="bs-month-nav">
+            <button class="bs-month-btn" onclick="bsDateNav('bs-enddate',-1)"><i data-lucide="chevron-left" style="stroke-width:2.5"></i></button>
+            <div class="bs-month-label" id="bs-enddate-month"></div>
+            <button class="bs-month-btn" onclick="bsDateNav('bs-enddate',1)"><i data-lucide="chevron-right" style="stroke-width:2.5"></i></button>
+          </div>
+          <div class="bs-date-grid" id="bs-enddate-grid"></div>
+          <div class="bs-action">
+            <button class="bs-confirm-btn" onclick="confirmDate('bs-enddate','addmed-end-val')">Confirm Date</button>
+          </div>
+        </div>
+      </div>
+
       </div><!-- /view-careplan -->
 
     </div><!-- /screen -->
@@ -869,6 +2326,405 @@
       document.getElementById('otp0').focus();
     }
 
+    function onBack() {
+      if (timerInterval) clearInterval(timerInterval);
+      showLoginStep('phone');
+      for (let i = 0; i < OTP_LEN; i++) {
+        const b = document.getElementById('otp'+i);
+        b.value = ''; b.classList.remove('filled');
+      }
+      document.getElementById('otp-error').classList.remove('visible');
+    }
+
+    function switchCpTab(btn, panelId) {
+      document.querySelectorAll('.cp-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.cp-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(panelId).classList.add('active');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // Tab → content-screen mapping (order matches nav-item order in DOM)
+    const NAV_SCREENS = ['dashboard', 'careplan', 'medication', 'vitals', 'messages'];
+    const NAV_LABELS  = ['Home', 'Care Plan', 'Medication', 'Devices', 'Messages'];
+
+    function setNav(el) {
+      const items = Array.from(document.querySelectorAll('.nav-item'));
+      const idx   = items.indexOf(el);
+      const screenId = NAV_SCREENS[idx] || 'careplan';
+
+      // Switch active tab
+      items.forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
+
+      // Switch content screen
+      document.querySelectorAll('.content-screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById('content-' + screenId);
+      if (target) {
+        target.classList.add('active');
+        if (window.lucide) lucide.createIcons();
+      }
+
+      // Dynamic header: Home shows greeting, all other tabs show module title
+      const header    = document.querySelector('.care-header');
+      const titleEl   = document.getElementById('module-title-text');
+      const backBtn   = document.getElementById('module-back-btn');
+      const addBtn    = document.getElementById('module-add-btn');
+      const stickyBar = document.getElementById('mdet-sticky-bar');
+      if (idx === 0) {
+        header.classList.remove('mode-module');
+        backBtn.classList.remove('visible');
+        addBtn.classList.remove('visible');
+      } else {
+        header.classList.add('mode-module');
+        titleEl.textContent = NAV_LABELS[idx];
+        backBtn.classList.remove('visible');
+        // Show "Add New" on Medication (idx=2) and Devices (idx=3) list views
+        addBtn.classList.toggle('visible', idx === 2 || idx === 3);
+        if (idx === 3) {
+          addBtn.onclick = showAddDevice;
+          addBtn.innerHTML = '<i data-lucide="plus" style="stroke-width:2.5"></i> Connect New';
+        } else if (idx === 2) {
+          addBtn.onclick = showAddMedication;
+          addBtn.innerHTML = '<i data-lucide="plus" style="stroke-width:2.5"></i> Add New';
+        }
+        if (window.lucide) lucide.createIcons();
+      }
+      // Hide sticky bars when switching tabs
+      if (stickyBar) stickyBar.classList.remove('visible');
+      const saveBar = document.getElementById('addmed-save-bar');
+      if (saveBar) saveBar.classList.remove('visible');
+    }
+
+    const MED_DATA = [
+      { name: 'Lisinopril',    sub: '10 mg · 1 tablet/day',  form: 'Tablet',  formClass: 'mfb-tablet',  dosage: '10 mg', freq: 'Once daily',  time: 'Before meal', start: 'Jan 10, 2026', end: 'Jul 10, 2026', status: 'active', instruction: 'Take with a full glass of water. Avoid potassium supplements or salt substitutes. Contact your doctor if you experience persistent dry cough, dizziness, or swelling.' },
+      { name: 'Amlodipine',   sub: '5 mg · 1 tablet/day',   form: 'Tablet',  formClass: 'mfb-tablet',  dosage: '5 mg',  freq: 'Once daily',  time: 'After meal',  start: 'Feb 01, 2026', end: 'Jul 10, 2026', status: 'active', instruction: 'May cause ankle swelling or flushing. Do not stop suddenly without consulting your doctor. Report any severe dizziness or irregular heartbeat immediately.' },
+      { name: 'Metformin',    sub: '500 mg · 2 tablets/day', form: 'Tablet',  formClass: 'mfb-tablet',  dosage: '500 mg', freq: 'Twice daily', time: 'With meal',   start: 'Jan 10, 2026', end: 'Jul 10, 2026', status: 'active', instruction: 'Take with food to reduce stomach upset. Monitor blood sugar regularly. Avoid alcohol. Contact your doctor before any surgical procedure or imaging with contrast.' },
+      { name: 'Atorvastatin', sub: '20 mg · 1 capsule/day',  form: 'Capsule', formClass: 'mfb-capsule', dosage: '20 mg', freq: 'Once daily',  time: 'Evening',     start: 'Jan 10, 2026', end: 'Apr 10, 2026', status: 'inactive', instruction: 'Avoid grapefruit and grapefruit juice while on this medication. Report any unexplained muscle pain, weakness, or dark urine immediately.' },
+    ];
+
+    function showMedDetail(idx) {
+      const m = MED_DATA[idx];
+      document.getElementById('mdet-med-name').textContent = m.name;
+      document.getElementById('mdet-med-sub').textContent = m.sub;
+      const badge = document.getElementById('mdet-form-badge');
+      badge.textContent = m.form;
+      badge.className = 'mlist-form-badge ' + m.formClass;
+      document.getElementById('mdet-dosage').textContent = m.dosage;
+      document.getElementById('mdet-freq').textContent = m.freq;
+      document.getElementById('mdet-time').textContent = m.time;
+      document.getElementById('mdet-form').textContent = m.form;
+      document.getElementById('mdet-start').textContent = m.start;
+      document.getElementById('mdet-end').textContent = m.end;
+      document.getElementById('mdet-instruction').textContent = m.instruction;
+      const isActive = m.status === 'active';
+      document.querySelectorAll('.mdet-sdot').forEach(d => {
+        d.style.background = isActive ? '#22c55e' : '#94a3b8';
+        d.style.boxShadow = isActive ? '0 0 0 2.5px rgba(34,197,94,0.18)' : 'none';
+      });
+      document.querySelectorAll('.mdet-slabel').forEach(l => {
+        l.style.color = isActive ? '#16a34a' : '#94a3b8';
+      });
+      document.querySelectorAll('.content-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('content-medication-detail').classList.add('active');
+      document.querySelector('.care-body').scrollTop = 0;
+      const backBtn = document.getElementById('module-back-btn');
+      backBtn.classList.add('visible');
+      backBtn.onclick = backFromMedDetail;
+      document.getElementById('module-add-btn').classList.remove('visible');
+      document.getElementById('mdet-sticky-bar').classList.add('visible');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function backFromMedDetail() {
+      document.querySelectorAll('.content-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('content-medication').classList.add('active');
+      document.querySelector('.care-body').scrollTop = 0;
+      document.getElementById('module-back-btn').classList.remove('visible');
+      document.getElementById('module-add-btn').classList.add('visible');
+      document.getElementById('mdet-sticky-bar').classList.remove('visible');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    /* ────────────────────────────────────────────────
+       ADD MEDICATION FLOW
+    ──────────────────────────────────────────────── */
+
+    const DRUG_LIST = [
+      'Lisinopril','Amlodipine','Metformin','Atorvastatin','Omeprazole',
+      'Levothyroxine','Metoprolol','Losartan','Gabapentin','Hydrochlorothiazide',
+      'Sertraline','Escitalopram','Montelukast','Pantoprazole','Furosemide',
+      'Alprazolam','Cetirizine','Prednisone','Tramadol','Ibuprofen',
+    ];
+
+    const BS_DATA = {
+      'bs-dosage':       ['2.5 mg','5 mg','10 mg','20 mg','25 mg','50 mg','100 mg','200 mg','500 mg','1000 mg'],
+      'bs-frequency':    ['Once daily','Twice daily','Three times daily','Four times daily','Every 6 hours','Every 8 hours','Weekly','As needed'],
+    };
+
+    // Track selections
+    const bsSelected = { 'bs-dosage': null, 'bs-frequency': null };
+    const dateState = { 'bs-startdate': { year: null, month: null, day: null }, 'bs-enddate': { year: null, month: null, day: null } };
+    const dateNav   = { 'bs-startdate': null, 'bs-enddate': null };
+
+    function showAddMedication() {
+      document.querySelectorAll('.content-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('content-add-medication').classList.add('active');
+      document.querySelector('.care-body').scrollTop = 0;
+      const backBtn = document.getElementById('module-back-btn');
+      backBtn.classList.add('visible');
+      backBtn.onclick = backFromAddMed;
+      document.getElementById('module-add-btn').classList.remove('visible');
+      document.getElementById('mdet-sticky-bar').classList.remove('visible');
+      document.getElementById('addmed-save-bar').classList.add('visible');
+      // Init bottom sheet options
+      initBsOptions();
+      // Init date nav to current month
+      const now = new Date();
+      dateNav['bs-startdate'] = { year: now.getFullYear(), month: now.getMonth() };
+      dateNav['bs-enddate']   = { year: now.getFullYear(), month: now.getMonth() };
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function backFromAddMed() {
+      document.querySelectorAll('.bs-overlay.open').forEach(el => el.classList.remove('open'));
+      document.querySelectorAll('.content-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('content-medication').classList.add('active');
+      document.querySelector('.care-body').scrollTop = 0;
+      document.getElementById('module-back-btn').classList.remove('visible');
+      document.getElementById('module-add-btn').classList.add('visible');
+      document.getElementById('addmed-save-bar').classList.remove('visible');
+      // Reset form
+      document.getElementById('addmed-drug-input').value = '';
+      document.getElementById('addmed-suggestions').classList.remove('open');
+      // Reset selects
+      ['addmed-dosage-val','addmed-freq-val','addmed-start-val','addmed-end-val'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = id === 'addmed-freq-val' ? 'Select frequency' : 'Select';
+        el.classList.add('placeholder');
+      });
+      // Reset chips
+      document.querySelectorAll('.af-chip').forEach(c => c.classList.remove('selected'));
+      document.getElementById('addmed-meal-val').value = '';
+      // Reset pill counter
+      pillCount = 1;
+      const pv = document.getElementById('addmed-pills-val');
+      if (pv) pv.textContent = '1';
+      Object.keys(bsSelected).forEach(k => bsSelected[k] = null);
+      if (window.lucide) lucide.createIcons();
+    }
+
+    /* Drug name search */
+    /* Pill counter */
+    let pillCount = 1;
+    function changePills(dir) {
+      pillCount = Math.max(1, Math.min(10, pillCount + dir));
+      document.getElementById('addmed-pills-val').textContent = pillCount;
+    }
+
+    /* Meal chip selector */
+    function selectMealChip(el, val) {
+      document.querySelectorAll('.af-chip').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('addmed-meal-val').value = val;
+    }
+
+    function onDrugSearch(val) {
+      const sugg = document.getElementById('addmed-suggestions');
+      const q = val.trim().toLowerCase();
+      if (!q) { sugg.classList.remove('open'); sugg.innerHTML = ''; return; }
+      const matches = DRUG_LIST.filter(d => d.toLowerCase().includes(q)).slice(0, 5);
+      if (!matches.length) { sugg.classList.remove('open'); return; }
+      sugg.innerHTML = matches.map(d => `
+        <div class="addmed-sugg-item" onmousedown="selectDrug('${d}')">
+          <div class="addmed-sugg-dot"></div>
+          <div class="addmed-sugg-name">${d}</div>
+          <div class="addmed-sugg-type">Medication</div>
+        </div>`).join('');
+      sugg.classList.add('open');
+    }
+    function selectDrug(name) {
+      document.getElementById('addmed-drug-input').value = name;
+      document.getElementById('addmed-suggestions').classList.remove('open');
+    }
+    function onDrugFocus() {
+      const val = document.getElementById('addmed-drug-input').value;
+      if (val.trim()) onDrugSearch(val);
+    }
+    function onDrugBlur() {
+      setTimeout(() => document.getElementById('addmed-suggestions').classList.remove('open'), 150);
+    }
+
+    /* Bottom sheet helpers */
+    function initBsOptions() {
+      ['bs-dosage','bs-frequency','bs-mealtime'].forEach(bsId => {
+        const container = document.getElementById(bsId + '-opts');
+        container.innerHTML = BS_DATA[bsId].map(opt => `
+          <div class="bs-option" onclick="selectBsOption('${bsId}','${opt}')">
+            <span class="bs-option-label">${opt}</span>
+            <div class="bs-option-check" id="${bsId}-opt-${opt.replace(/\s+/g,'-')}"></div>
+          </div>`).join('');
+      });
+    }
+
+    function selectBsOption(bsId, val) {
+      // Deselect previous
+      const prev = bsSelected[bsId];
+      if (prev) {
+        const prevEl = document.getElementById(bsId + '-opt-' + prev.replace(/\s+/g,'-'));
+        if (prevEl) prevEl.classList.remove('selected');
+      }
+      bsSelected[bsId] = val;
+      const newEl = document.getElementById(bsId + '-opt-' + val.replace(/\s+/g,'-'));
+      if (newEl) newEl.classList.add('selected');
+    }
+
+    function openBS(bsId) {
+      document.getElementById(bsId).classList.add('open');
+      if (window.lucide) lucide.createIcons();
+    }
+    function closeBS(bsId) { document.getElementById(bsId).classList.remove('open'); }
+    function bsOverlayClick(e, bsId) { if (e.target === e.currentTarget) closeBS(bsId); }
+
+    function confirmBS(bsId, targetId) {
+      const val = bsSelected[bsId];
+      if (!val) { closeBS(bsId); return; }
+      const el = document.getElementById(targetId);
+      el.textContent = val;
+      el.classList.remove('placeholder');
+      closeBS(bsId);
+    }
+
+    /* Date picker */
+    const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const DAY_LABELS  = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+    function openDateBS(bsId, label) {
+      renderDateGrid(bsId);
+      document.getElementById(bsId).classList.add('open');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function bsDateNav(bsId, dir) {
+      const nav = dateNav[bsId];
+      nav.month += dir;
+      if (nav.month > 11) { nav.month = 0; nav.year++; }
+      if (nav.month < 0)  { nav.month = 11; nav.year--; }
+      renderDateGrid(bsId);
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderDateGrid(bsId) {
+      const nav = dateNav[bsId];
+      const sel = dateState[bsId];
+      const today = new Date();
+      document.getElementById(bsId + '-month').textContent = MONTH_NAMES[nav.month] + ' ' + nav.year;
+
+      const firstDay = new Date(nav.year, nav.month, 1).getDay();
+      const daysInMonth = new Date(nav.year, nav.month + 1, 0).getDate();
+      const daysInPrev  = new Date(nav.year, nav.month, 0).getDate();
+
+      let html = DAY_LABELS.map(d => `<div class="bs-date-day-label">${d}</div>`).join('');
+
+      // Prev month padding
+      for (let i = firstDay - 1; i >= 0; i--) {
+        html += `<div class="bs-date-cell other-month">${daysInPrev - i}</div>`;
+      }
+      // Current month
+      for (let d = 1; d <= daysInMonth; d++) {
+        const isToday = (today.getFullYear() === nav.year && today.getMonth() === nav.month && today.getDate() === d);
+        const isSel   = (sel.year === nav.year && sel.month === nav.month && sel.day === d);
+        let cls = 'bs-date-cell';
+        if (isSel) cls += ' selected';
+        else if (isToday) cls += ' today';
+        html += `<div class="${cls}" onclick="selectDate('${bsId}',${d})">${d}</div>`;
+      }
+      // Fill remaining cells
+      const total = firstDay + daysInMonth;
+      const remainder = total % 7 === 0 ? 0 : 7 - (total % 7);
+      for (let d = 1; d <= remainder; d++) {
+        html += `<div class="bs-date-cell other-month">${d}</div>`;
+      }
+
+      document.getElementById(bsId + '-grid').innerHTML = html;
+    }
+
+    function selectDate(bsId, day) {
+      const nav = dateNav[bsId];
+      dateState[bsId] = { year: nav.year, month: nav.month, day };
+      renderDateGrid(bsId);
+    }
+
+    function confirmDate(bsId, targetId) {
+      const sel = dateState[bsId];
+      if (!sel.day) { closeBS(bsId); return; }
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const el = document.getElementById(targetId);
+      el.textContent = months[sel.month] + ' ' + sel.day + ', ' + sel.year;
+      el.classList.remove('placeholder');
+      closeBS(bsId);
+    }
+
+    /* ── Devices ── */
+    function showAddDevice() {
+      // Placeholder — future screen; for now show a quick toast-style indication
+      const addBtn = document.getElementById('module-add-btn');
+      addBtn.style.background = '#22c55e';
+      addBtn.textContent = '✓ Coming Soon';
+      setTimeout(() => {
+        addBtn.style.background = '#1A2D45';
+        addBtn.innerHTML = '<i data-lucide="plus" style="stroke-width:2.5"></i> Connect New';
+        if (window.lucide) lucide.createIcons();
+      }, 1400);
+    }
+
+    function confirmRemoveDevice(btn, name) {
+      const card = btn.closest('.dv-card');
+      card.style.transition = 'opacity 0.25s, transform 0.25s';
+      card.style.opacity = '0'; card.style.transform = 'translateX(30px)';
+      setTimeout(() => card.remove(), 260);
+    }
+
+    function showCpDetail(card) {
+      // Show detail screen
+      document.querySelectorAll('.content-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('content-careplan-detail').classList.add('active');
+      // Scroll body to top
+      document.querySelector('.care-body').scrollTop = 0;
+      // Show back button in module header
+      const backBtn = document.getElementById('module-back-btn');
+      backBtn.classList.add('visible');
+      backBtn.onclick = backFromDetail;
+      // Update plan name from card if possible
+      const cardTitle = card && card.querySelector('.cp-card-title');
+      if (cardTitle) document.getElementById('detail-plan-name').textContent = cardTitle.textContent;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function backFromDetail() {
+      document.querySelectorAll('.content-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('content-careplan').classList.add('active');
+      document.querySelector('.care-body').scrollTop = 0;
+      const backBtn = document.getElementById('module-back-btn');
+      backBtn.classList.remove('visible');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function switchMedTab(btn, panelId) {
+      document.querySelectorAll('.med-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.med-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(panelId).classList.add('active');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // Init Lucide icons
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) lucide.createIcons();
+    });
+    // Also re-render after OTP->care plan transition
+    const _origVerify = onVerify;
     function onVerify() {
       let code = '';
       for (let i = 0; i < OTP_LEN; i++) code += document.getElementById('otp'+i).value;
@@ -881,25 +2737,10 @@
       setTimeout(() => {
         btn.classList.remove('loading'); btn.disabled = false;
         if (timerInterval) clearInterval(timerInterval);
-        // Navigate to Care Plan screen
         document.getElementById('view-login').classList.remove('active');
         document.getElementById('view-careplan').classList.add('active');
+        if (window.lucide) lucide.createIcons();
       }, 1300);
-    }
-
-    function onBack() {
-      if (timerInterval) clearInterval(timerInterval);
-      showLoginStep('phone');
-      for (let i = 0; i < OTP_LEN; i++) {
-        const b = document.getElementById('otp'+i);
-        b.value = ''; b.classList.remove('filled');
-      }
-      document.getElementById('otp-error').classList.remove('visible');
-    }
-
-    function setNav(el) {
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      el.classList.add('active');
     }
   </script>
 </body>
