@@ -285,6 +285,20 @@ export const changePasswordSchema = yup.object().shape({
     .oneOf([yup.ref('newPassword')], 'Passwords must match'),
 });
 
+export const phoneSchema = yup.object().shape({
+  phone: yup
+    .string()
+    .required('Mobile number is required')
+    .matches(/^[0-9]{10}$/, 'Please enter a valid 10-digit mobile number'),
+});
+
+export const otpSchema = yup.object().shape({
+  otp: yup
+    .string()
+    .required('OTP is required')
+    .matches(/^[0-9]{6}$/, 'Please enter a valid 6-digit OTP'),
+});
+
 /**
  * Generic helper function to validate any data against a Yup schema
  * @param data - The data to validate

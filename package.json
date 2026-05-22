@@ -5,6 +5,8 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
+    "dev": "react-native start",
+    "dev:android": "npm run android:dev",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest --config jest.config.ts",
@@ -58,6 +60,7 @@
     "@shopify/flash-list": "^2.3.1",
     "axios": "^1.14.0",
     "i18next": "^26.0.2",
+    "lucide-react-native": "^1.16.0",
     "react": "19.2.3",
     "react-error-boundary": "^6.1.1",
     "react-i18next": "^17.0.1",

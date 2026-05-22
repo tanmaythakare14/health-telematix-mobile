@@ -53,17 +53,48 @@ export interface MovieDetails {
   bio?: string;
 }
 
+export type MedicationForm = 'Tablet' | 'Capsule' | 'Syrup';
+export type MedicationStatus = 'Active' | 'Completed' | 'Inactive';
+export type MealTime = 'Before Meal' | 'After Meal' | 'With Food';
+export type FrequencyOption =
+  | 'Once daily'
+  | 'Twice daily'
+  | 'Three times daily'
+  | 'Four times daily'
+  | 'As needed';
+
+export interface Medication {
+  id: string;
+  drugName: string;
+  dosage: string;
+  pillsPerDose: number;
+  frequency: FrequencyOption;
+  form: MedicationForm;
+  mealTime: MealTime;
+  startDate: string;
+  endDate: string;
+  clinicalInstruction?: string;
+  status: MedicationStatus;
+  timeOfIntake: string[];
+}
+
 export type AuthStackParamList = {
   LOGIN_SCREEN: undefined;
   HOME: undefined;
-  HOME_DETAILS: { data?: MovieDetails }; // Ensure type consistency with DetailsScreenProps
-  ACCOUNT: undefined;
+};
+
+export type MedicationStackParamList = {
+  MEDICATION_LIST: undefined;
+  MEDICATION_DETAIL: { medication: Medication };
+  ADD_MEDICATION: { medication?: Medication };
 };
 
 export type HomeTabParamList = {
   HOME: undefined;
   HOME_DETAILS: { data?: MovieDetails };
-  ACCOUNT: undefined;
+  CARE_PLAN: undefined;
+  MEDICATION: undefined;
+  DEVICES: undefined;
 };
 
 export interface ConfigType {

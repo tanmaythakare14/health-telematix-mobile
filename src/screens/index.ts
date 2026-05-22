@@ -1,5 +1,10 @@
 import Account from './Account/Account';
 import Login from './AuthScreens/Login/Login';
+import CarePlan from './CarePlan/CarePlan';
 import DetailsScreen from './DetailScreen/DetailScreen';
+import Devices from './Devices/Devices';
 import Home from './Home/Home';
-export { Login, Home, Account, DetailsScreen };
+import MedicationList from './Medication/MedicationList/MedicationList';
+import MedicationDetail from './Medication/MedicationDetail/MedicationDetail';
+import AddMedication from './Medication/AddMedication/AddMedication';
+export { Login, Home, Account, CarePlan, Devices, DetailsScreen, MedicationList, MedicationDetail, AddMedication };

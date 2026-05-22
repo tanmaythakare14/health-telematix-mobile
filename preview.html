@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health Telematix — Full App Preview</title>
+  <style>
+    :root {
+      --navy:      #1A2D45;
+      --blue:      #0077b6;
+      --blue-lt:   #00b4d8;
+      --bg:        #F8FAFC;
+      --white:     #FFFFFF;
+      --border:    #F0F4F8;
+      --border2:   #E2E8F0;
+      --text:      #1A1A2E;
+      --sub:       #64748B;
+      --muted:     #94A3B8;
+      --green:     #10B981;
+      --green-bg:  #ECFDF5;
+      --amber:     #F59E0B;
+      --amber-bg:  #FFFBEB;
+      --red:       #EF4444;
+      --red-bg:    #FEF2F2;
+      --slate:     #475569;
+      --tab-h:     62px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 30% 20%, #0d1b2e 0%, #060d18 60%, #000 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', sans-serif;
+      padding: 48px 24px 64px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Page header ─────────────────────────────────────────────────────────── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .page-label {
+      display: inline-block;
+      background: rgba(0,119,182,0.18);
+      color: #00b4d8;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 99px;
+      border: 1px solid rgba(0,180,216,0.25);
+      margin-bottom: 14px;
+    }
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .page-sub {
+      font-size: 14px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ── Section ─────────────────────────────────────────────────────────────── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      margin: 0 0 20px 4px;
+    }
+
+    /* ── Phones row ──────────────────────────────────────────────────────────── */
+    .phones-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      justify-content: center;
+      margin-bottom: 56px;
+    }
+
+    .phone-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .phone-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+    }
+
+    /* ── iPhone 15 frame ─────────────────────────────────────────────────────── */
+    .iphone {
+      position: relative;
+      width: 320px;
+      height: 693px;
+      background: linear-gradient(160deg, #5e5e62 0%, #3d3d3f 35%, #2e2e30 65%, #1e1e1f 100%);
+      border-radius: 44px;
+      padding: 9px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.08),
+        0 40px 80px rgba(0,0,0,0.7),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+    .iphone-inner {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      border-radius: 37px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .iphone-inner.dark-screen { background: #000814; }
+
+    /* Dynamic Island */
+    .dynamic-island {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 88px; height: 26px;
+      background: #000;
+      border-radius: 13px;
+      z-index: 10;
+    }
+
+    /* Status bar */
+    .status-bar {
+      height: 44px;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 20px 6px;
+      flex-shrink: 0;
+    }
+    .status-bar.dark { color: #fff; }
+    .status-bar.light { color: #1A1A2E; }
+    .status-time {
+      font-size: 13px;
+      font-weight: 600;
+      flex: 1;
+    }
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    /* ── Bottom tab bar ──────────────────────────────────────────────────────── */
+    .tab-bar {
+      height: var(--tab-h);
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding-top: 6px;
+    }
+    .tab-icon { font-size: 20px; line-height: 1; }
+    .tab-text { font-size: 10px; font-weight: 500; color: var(--muted); }
+    .tab-text.active { color: var(--blue); font-weight: 600; }
+    .tab-icon.active { filter: none; }
+
+    /* ── Scrollable screen content ───────────────────────────────────────────── */
+    .screen-scroll {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCREEN: LOGIN (Phone step)
+    ═══════════════════════════════════════════════════════════════ */
+    .login-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0 20px 32px;
+      background: #fff;
+    }
+    .login-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 56px 0 32px;
+    }
+    .login-logo-mark {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: #03045e;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 10px;
+      box-shadow: 0 6px 20px rgba(3,4,94,0.35);
+    }
+    .login-logo-initials {
+      font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 1px;
+    }
+    .login-brand-name {
+      font-size: 10px; font-weight: 600; color: #94A3B8;
+      letter-spacing: 1.5px; text-transform: uppercase;
+    }
+    .login-content { flex: 1; }
+    .login-headline {
+      font-size: 26px; font-weight: 700; color: #0f172a;
+      letter-spacing: -0.3px; line-height: 1.25; margin-bottom: 6px;
+    }
+    .login-subtitle { font-size: 13px; color: #94A3B8; line-height: 1.6; margin-bottom: 28px; }
+    .field-label {
+      font-size: 10px; font-weight: 700; color: #94A3B8;
+      letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .phone-input-row {
+      display: flex; align-items: center;
+      height: 48px;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .phone-input-row.focused { border-color: #0077b6; border-width: 2px; }
+    .country-chip {
+      display: flex; align-items: center; gap: 3px;
+      padding: 0 12px; height: 100%;
+      font-size: 13px; font-weight: 600; color: #1A1A2E;
+      border-right: 1px solid #E2E8F0;
+      white-space: nowrap;
+    }
+    .phone-field {
+      flex: 1; padding: 0 12px;
+      font-size: 15px; font-weight: 500; color: #94A3B8;
+    }
+    .cta-btn {
+      height: 48px;
+      border-radius: 10px;
+      background: #0077b6;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #fff;
+      margin-bottom: 28px;
+      cursor: pointer;
+    }
+    .privacy-row {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 3px;
+      font-size: 11px; color: #94A3B8; text-align: center;
+    }
+    .privacy-link { color: #0077b6; font-weight: 600; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCREEN: LOGIN (OTP step)
+    ═══════════════════════════════════════════════════════════════ */
+    .back-btn {
+      width: 38px; height: 38px;
+      border-radius: 19px;
+      border: 1.5px solid #E2E8F0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #1A1A2E;
+      margin-bottom: 20px;
+      align-self: flex-start;
+    }
+    .otp-row { display: flex; gap: 7px; margin-bottom: 6px; }
+    .otp-box {
+      flex: 1; height: 48px;
+      border-radius: 10px;
+      border: 2px solid #E2E8F0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 700; color: #1A1A2E;
+    }
+    .otp-box.filled { border-color: #0077b6; background: rgba(0,119,182,0.06); }
+    .resend-row { display: flex; justify-content: center; padding: 12px 0 24px; }
+    .timer-text { font-size: 12px; color: #94A3B8; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCREEN: DASHBOARD / HOME
+    ═══════════════════════════════════════════════════════════════ */
+    .screen-header {
+      height: 52px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+    .screen-header-title { font-size: 17px; font-weight: 700; color: var(--text); flex: 1; }
+    .screen-header-right { font-size: 12px; color: var(--blue); font-weight: 600; }
+
+    .movie-card {
+      display: flex; gap: 12px;
+      padding: 12px 16px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+    .movie-thumb {
+      width: 60px; height: 70px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #1e3a5f 0%, #0077b6 100%);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .movie-info { flex: 1; }
+    .movie-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .movie-pub { font-size: 11px; color: var(--blue); font-weight: 500; margin-bottom: 2px; }
+    .movie-appear { font-size: 11px; color: var(--muted); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCREEN: CARE PLAN
+    ═══════════════════════════════════════════════════════════════ */
+    .empty-state {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; padding: 32px;
+    }
+    .empty-icon { font-size: 40px; opacity: 0.4; }
+    .empty-title { font-size: 13px; color: var(--muted); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCREEN: MEDICATION LIST
+    ═══════════════════════════════════════════════════════════════ */
+    .med-header {
+      padding: 14px 16px 10px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .med-header-title { font-size: 18px; font-weight: 700; color: var(--text); }
+    .add-btn {
+      display: flex; align-items: center; gap: 4px;
+      background: var(--blue);
+      color: #fff; font-size: 11px; font-weight: 700;
+      padding: 6px 12px; border-radius: 8px;
+    }
+
+    .tab-row {
+      display: flex; background: #fff;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .tab-pill {
+      flex: 1; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      border-bottom: 2px solid transparent;
+    }
+    .tab-pill.active { color: var(--blue); border-color: var(--blue); }
+
+    .med-card {
+      display: flex;
+      background: #fff;
+      border-radius: 10px;
+      margin: 8px 12px 0;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .med-accent { width: 4px; background: var(--blue); flex-shrink: 0; }
+    .med-accent.past { background: var(--muted); }
+    .med-body { flex: 1; padding: 10px 12px; }
+    .med-top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .med-name-row { display: flex; align-items: center; gap: 6px; }
+    .med-drug-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .badge { padding: 2px 7px; border-radius: 99px; font-size: 9px; font-weight: 700; }
+    .badge-tablet { background: #EFF6FF; color: #2563EB; }
+    .badge-capsule { background: #FDF4FF; color: #9333EA; }
+    .badge-syrup { background: #ECFDF5; color: #059669; }
+    .badge-active { background: var(--green-bg); color: var(--green); }
+    .badge-completed { background: #EFF6FF; color: #3B82F6; }
+    .badge-inactive { background: #F1F5F9; color: var(--muted); }
+    .med-meta { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .meta-label { font-size: 10px; color: var(--muted); }
+    .meta-value { font-size: 10px; color: var(--slate); font-weight: 500; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--muted); }
+    .card-arrow { padding: 0 10px; display: flex; align-items: center; color: var(--muted); font-size: 18px; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCREEN: MEDICATION DETAIL
+    ═══════════════════════════════════════════════════════════════ */
+    .detail-header {
+      height: 52px; background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 12px;
+      flex-shrink: 0; gap: 8px;
+    }
+    .detail-back-btn {
+      width: 32px; height: 32px;
+      border-radius: 16px; border: 1.5px solid #E2E8F0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--text); flex-shrink: 0;
+    }
+    .detail-header-title { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; }
+    .detail-actions { display: flex; gap: 6px; }
+    .edit-btn {
+      padding: 5px 10px; border-radius: 7px;
+      background: #EFF6FF; color: #2563EB;
+      font-size: 10px; font-weight: 700;
+    }
+    .delete-btn {
+      padding: 5px 10px; border-radius: 7px;
+      background: var(--red-bg); color: var(--red);
+      font-size: 10px; font-weight: 700;
+    }
+
+    .status-banner {
+      margin: 10px 12px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .status-banner.active { background: var(--green-bg); }
+    .status-banner.completed { background: #EFF6FF; }
+    .banner-label { font-size: 10px; color: var(--muted); margin-bottom: 2px; }
+    .banner-value { font-size: 14px; font-weight: 700; color: var(--text); }
+    .status-pill { padding: 4px 10px; border-radius: 99px; font-size: 10px; font-weight: 700; }
+    .status-pill.active { background: var(--green); color: #fff; }
+    .status-pill.completed { background: #3B82F6; color: #fff; }
+
+    .info-card {
+      margin: 8px 12px 0;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .info-card-title {
+      padding: 10px 14px 6px;
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      letter-spacing: 0.8px; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row-label { font-size: 11px; color: var(--muted); }
+    .info-row-value { font-size: 12px; font-weight: 600; color: var(--slate); }
+    .time-chips { display: flex; gap: 4px; }
+    .time-chip {
+      background: #EFF6FF; color: #2563EB;
+      font-size: 10px; font-weight: 600;
+      padding: 3px 8px; border-radius: 99px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCREEN: ADD MEDICATION
+    ═══════════════════════════════════════════════════════════════ */
+    .form-card {
+      margin: 8px 12px 0;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .form-card-title {
+      padding: 10px 14px 8px;
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      letter-spacing: 0.8px; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .form-field { padding: 8px 14px; }
+    .form-label { font-size: 10px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
+    .form-input {
+      height: 36px;
+      border: 1.5px solid #E2E8F0; border-radius: 8px;
+      padding: 0 10px; font-size: 12px; color: var(--muted);
+      display: flex; align-items: center; background: #fff;
+    }
+    .chips-row { display: flex; gap: 5px; flex-wrap: wrap; }
+    .chip {
+      padding: 5px 10px; border-radius: 99px;
+      border: 1.5px solid #E2E8F0;
+      font-size: 10px; font-weight: 600; color: var(--muted);
+    }
+    .chip.active { background: #EFF6FF; border-color: #3B82F6; color: #2563EB; }
+    .submit-btn {
+      margin: 12px 12px 4px;
+      height: 44px; border-radius: 10px;
+      background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCREEN: DEVICES
+    ═══════════════════════════════════════════════════════════════ */
+
+    /* ── Divider ─────────────────────────────────────────────────────────────── */
+    .row-sep { height: 1px; background: var(--border); margin: 0 16px; }
+
+    /* ── Scrollable content ─────────────────────────────────────────────────── */
+    .scroll-content {
+      overflow-y: auto;
+      overflow-x: hidden;
+      height: 100%;
+    }
+    .scroll-content::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- ── Page header ─────────────────────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-label">Health Telematix · React Native</div>
+  <div class="page-title">App Screens Preview</div>
+  <div class="page-sub">All screens built so far — Login · Dashboard · Medication · Care Plan · Devices</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ROW 1: Authentication
+═══════════════════════════════════════════════ -->
+<div style="text-align:center; margin-bottom: 20px;">
+  <div class="section-title">Authentication</div>
+</div>
+<div class="phones-row">
+
+  <!-- Login — Phone step -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Login · Step 1</div>
+    <div class="iphone">
+      <div class="iphone-inner" style="background:#fff;">
+        <div class="dynamic-island"></div>
+        <div class="status-bar light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▐▐▐ ✦ ▊</span>
+        </div>
+        <div class="login-screen">
+          <div class="login-brand">
+            <div class="login-logo-mark"><span class="login-logo-initials">HT</span></div>
+            <span class="login-brand-name">Health Telematix</span>
+          </div>
+          <div class="login-content">
+            <div class="login-headline">Welcome back</div>
+            <div class="login-subtitle">Sign in with your mobile number to continue</div>
+            <div class="field-label">Mobile Number</div>
+            <div class="phone-input-row focused">
+              <div class="country-chip">🇺🇸 +1 ▾</div>
+              <div class="phone-field">(555) 000-0000</div>
+            </div>
+            <div class="cta-btn">Send OTP</div>
+            <div class="privacy-row">
+              By continuing you agree to our
+              <span class="privacy-link">Privacy Policy</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login — OTP step -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Login · Step 2 (OTP)</div>
+    <div class="iphone">
+      <div class="iphone-inner" style="background:#fff;">
+        <div class="dynamic-island"></div>
+        <div class="status-bar light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▐▐▐ ✦ ▊</span>
+        </div>
+        <div class="login-screen">
+          <div class="login-brand">
+            <div class="login-logo-mark"><span class="login-logo-initials">HT</span></div>
+            <span class="login-brand-name">Health Telematix</span>
+          </div>
+          <div class="login-content">
+            <div class="back-btn">←</div>
+            <div class="login-headline">Enter OTP</div>
+            <div class="login-subtitle">We sent a code to ••• ••• 0000</div>
+            <div class="otp-row">
+              <div class="otp-box filled">3</div>
+              <div class="otp-box filled">7</div>
+              <div class="otp-box filled">2</div>
+              <div class="otp-box">·</div>
+              <div class="otp-box">·</div>
+              <div class="otp-box">·</div>
+            </div>
+            <div class="resend-row">
+              <span class="timer-text">Resend code in 00:42s</span>
+            </div>
+            <div class="cta-btn">Verify OTP</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phones-row -->
+
+<!-- ═══════════════════════════════════════════════
+     ROW 2: Main Tabs
+═══════════════════════════════════════════════ -->
+<div style="text-align:center; margin-bottom: 20px;">
+  <div class="section-title">Main App — Bottom Tabs</div>
+</div>
+<div class="phones-row">
+
+  <!-- Dashboard -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Dashboard</div>
+    <div class="iphone">
+      <div class="iphone-inner">
+        <div class="dynamic-island"></div>
+        <div class="status-bar light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▐▐▐ ✦ ▊</span>
+        </div>
+        <div class="screen-header">
+          <span class="screen-header-title">Superheroes</span>
+          <span class="screen-header-right">Settings</span>
+        </div>
+        <div class="scroll-content" style="flex:1;">
+          <div class="movie-card">
+            <div class="movie-thumb">🦸</div>
+            <div class="movie-info">
+              <div class="movie-name">Spider-Man</div>
+              <div class="movie-pub">Marvel Comics</div>
+              <div class="movie-appear">First appeared · 1962</div>
+            </div>
+          </div>
+          <div class="row-sep"></div>
+          <div class="movie-card">
+            <div class="movie-thumb">🦇</div>
+            <div class="movie-info">
+              <div class="movie-name">Batman</div>
+              <div class="movie-pub">DC Comics</div>
+              <div class="movie-appear">First appeared · 1939</div>
+            </div>
+          </div>
+          <div class="row-sep"></div>
+          <div class="movie-card">
+            <div class="movie-thumb">⚡</div>
+            <div class="movie-info">
+              <div class="movie-name">The Flash</div>
+              <div class="movie-pub">DC Comics</div>
+              <div class="movie-appear">First appeared · 1940</div>
+            </div>
+          </div>
+          <div class="row-sep"></div>
+          <div class="movie-card">
+            <div class="movie-thumb">🛡️</div>
+            <div class="movie-info">
+              <div class="movie-name">Captain America</div>
+              <div class="movie-pub">Marvel Comics</div>
+              <div class="movie-appear">First appeared · 1941</div>
+            </div>
+          </div>
+          <div class="row-sep"></div>
+          <div class="movie-card">
+            <div class="movie-thumb">🔱</div>
+            <div class="movie-info">
+              <div class="movie-name">Thor</div>
+              <div class="movie-pub">Marvel Comics</div>
+              <div class="movie-appear">First appeared · 1962</div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item">
+            <div class="tab-icon active">⊞</div>
+            <div class="tab-text active">Dashboard</div>
+          </div>
+          <div class="tab-item">
+            <div class="tab-icon">📋</div>
+            <div class="tab-text">Care Plan</div>
+          </div>
+          <div class="tab-item">
+            <div class="tab-icon">💊</div>
+            <div class="tab-text">Medication</div>
+          </div>
+          <div class="tab-item">
+            <div class="tab-icon">📡</div>
+            <div class="tab-text">Devices</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Care Plan -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Care Plan</div>
+    <div class="iphone">
+      <div class="iphone-inner">
+        <div class="dynamic-island"></div>
+        <div class="status-bar light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▐▐▐ ✦ ▊</span>
+        </div>
+        <div class="screen-header">
+          <span class="screen-header-title">Care Plan</span>
+        </div>
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">No care plans yet.</div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item">
+            <div class="tab-icon">⊞</div>
+            <div class="tab-text">Dashboard</div>
+          </div>
+          <div class="tab-item">
+            <div class="tab-icon active">📋</div>
+            <div class="tab-text active">Care Plan</div>
+          </div>
+          <div class="tab-item">
+            <div class="tab-icon">💊</div>
+            <div class="tab-text">Medication</div>
+          </div>
+          <div class="tab-item">
+            <div class="tab-icon">📡</div>
+            <div class="tab-text">Devices</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Devices -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Devices</div>
+    <div class="iphone">
+      <div class="iphone-inner">
+        <div class="dynamic-island"></div>
+        <div class="status-bar light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▐▐▐ ✦ ▊</span>
+        </div>
+        <div class="screen-header">
+          <span class="screen-header-title">Devices</span>
+        </div>
+        <div class="empty-state">
+          <div class="empty-icon">📡</div>
+          <div class="empty-title">No devices connected.</div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item">
+            <div class="tab-icon">⊞</div>
+            <div class="tab-text">Dashboard</div>
+          </div>
+          <div class="tab-item">
+            <div class="tab-icon">📋</div>
+            <div class="tab-text">Care Plan</div>
+          </div>
+          <div class="tab-item">
+            <div class="tab-icon">💊</div>
+            <div class="tab-text">Medication</div>
+          </div>
+          <div class="tab-item">
+            <div class="tab-icon active">📡</div>
+            <div class="tab-text active">Devices</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phones-row -->
+
+<!-- ═══════════════════════════════════════════════
+     ROW 3: Medication stack
+═══════════════════════════════════════════════ -->
+<div style="text-align:center; margin-bottom: 20px;">
+  <div class="section-title">Medication Stack</div>
+</div>
+<div class="phones-row">
+
+  <!-- Medication List — Current -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Medication List</div>
+    <div class="iphone">
+      <div class="iphone-inner">
+        <div class="dynamic-island"></div>
+        <div class="status-bar light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▐▐▐ ✦ ▊</span>
+        </div>
+        <div class="med-header">
+          <span class="med-header-title">Medications</span>
+          <div class="add-btn">+ Add New</div>
+        </div>
+        <div class="tab-row">
+          <div class="tab-pill active">Current</div>
+          <div class="tab-pill">Past</div>
+        </div>
+        <div class="scroll-content" style="flex:1; padding-bottom:8px;">
+          <!-- card 1 -->
+          <div class="med-card">
+            <div class="med-accent"></div>
+            <div class="med-body">
+              <div class="med-top-row">
+                <div class="med-name-row">
+                  <span class="med-drug-name">Metformin</span>
+                  <span class="badge badge-tablet">Tablet</span>
+                </div>
+                <span class="badge badge-active">Active</span>
+              </div>
+              <div class="med-meta">
+                <span class="meta-label">Dosage </span>
+                <span class="meta-value">500mg · 1 pill</span>
+                <div class="meta-dot"></div>
+                <span class="meta-value">After Meal</span>
+              </div>
+              <div class="med-meta">
+                <span class="meta-label">Frequency </span>
+                <span class="meta-value">Twice Daily</span>
+              </div>
+            </div>
+            <div class="card-arrow">›</div>
+          </div>
+          <!-- card 2 -->
+          <div class="med-card">
+            <div class="med-accent"></div>
+            <div class="med-body">
+              <div class="med-top-row">
+                <div class="med-name-row">
+                  <span class="med-drug-name">Lisinopril</span>
+                  <span class="badge badge-tablet">Tablet</span>
+                </div>
+                <span class="badge badge-active">Active</span>
+              </div>
+              <div class="med-meta">
+                <span class="meta-label">Dosage </span>
+                <span class="meta-value">10mg · 1 pill</span>
+                <div class="meta-dot"></div>
+                <span class="meta-value">Before Meal</span>
+              </div>
+              <div class="med-meta">
+                <span class="meta-label">Frequency </span>
+                <span class="meta-value">Once Daily</span>
+              </div>
+            </div>
+            <div class="card-arrow">›</div>
+          </div>
+          <!-- card 3 -->
+          <div class="med-card">
+            <div class="med-accent"></div>
+            <div class="med-body">
+              <div class="med-top-row">
+                <div class="med-name-row">
+                  <span class="med-drug-name">Amoxicillin</span>
+                  <span class="badge badge-capsule">Capsule</span>
+                </div>
+                <span class="badge badge-active">Active</span>
+              </div>
+              <div class="med-meta">
+                <span class="meta-label">Dosage </span>
+                <span class="meta-value">250mg · 2 pills</span>
+                <div class="meta-dot"></div>
+                <span class="meta-value">After Meal</span>
+              </div>
+              <div class="med-meta">
+                <span class="meta-label">Frequency </span>
+                <span class="meta-value">Three Times Daily</span>
+              </div>
+            </div>
+            <div class="card-arrow">›</div>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab-item"><div class="tab-icon">⊞</div><div class="tab-text">Dashboard</div></div>
+          <div class="tab-item"><div class="tab-icon">📋</div><div class="tab-text">Care Plan</div></div>
+          <div class="tab-item"><div class="tab-icon active">💊</div><div class="tab-text active">Medication</div></div>
+          <div class="tab-item"><div class="tab-icon">📡</div><div class="tab-text">Devices</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Medication Detail -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Medication Detail</div>
+    <div class="iphone">
+      <div class="iphone-inner">
+        <div class="dynamic-island"></div>
+        <div class="status-bar light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▐▐▐ ✦ ▊</span>
+        </div>
+        <div class="detail-header">
+          <div class="detail-back-btn">‹</div>
+          <span class="detail-header-title">Medication Detail</span>
+          <div class="detail-actions">
+            <div class="edit-btn">Edit</div>
+            <div class="delete-btn">Delete</div>
+          </div>
+        </div>
+        <div class="scroll-content" style="flex:1; padding-bottom:12px;">
+          <div class="status-banner active">
+            <div>
+              <div class="banner-label">Medicine Name</div>
+              <div class="banner-value">Metformin</div>
+            </div>
+            <div class="status-pill active">Active</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title">Prescription Info</div>
+            <div class="info-row">
+              <span class="info-row-label">Form</span>
+              <span class="badge badge-tablet">Tablet</span>
+            </div>
+            <div class="info-row">
+              <span class="info-row-label">Dosage</span>
+              <span class="info-row-value">500mg · 1 pill</span>
+            </div>
+            <div class="info-row">
+              <span class="info-row-label">Frequency</span>
+              <span class="info-row-value">Twice Daily</span>
+            </div>
+            <div class="info-row">
+              <span class="info-row-label">Meal Time</span>
+              <span class="info-row-value">After Meal</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title">Schedule</div>
+            <div class="info-row">
+              <span class="info-row-label">Time of Intake</span>
+              <div class="time-chips">
+                <span class="time-chip">08:00 AM</span>
+                <span class="time-chip">08:00 PM</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <span class="info-row-label">Start Date</span>
+              <span class="info-row-value">01/05/2025</span>
+            </div>
+            <div class="info-row">
+              <span class="info-row-label">End Date</span>
+              <span class="info-row-value">01/08/2025</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title">Clinical Instruction</div>
+            <div class="info-row">
+              <span class="info-row-label" style="color:var(--slate); font-size:11px; line-height:1.5;">Take with a full glass of water. Monitor blood sugar levels regularly.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Medication -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Add Medication</div>
+    <div class="iphone">
+      <div class="iphone-inner">
+        <div class="dynamic-island"></div>
+        <div class="status-bar light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">▐▐▐ ✦ ▊</span>
+        </div>
+        <div class="detail-header">
+          <div class="detail-back-btn">‹</div>
+          <span class="detail-header-title">Add Medication</span>
+        </div>
+        <div class="scroll-content" style="flex:1; padding-bottom:12px;">
+          <div class="form-card">
+            <div class="form-card-title">Drug Details</div>
+            <div class="form-field">
+              <div class="form-label">Drug Name</div>
+              <div class="form-input">Enter drug name</div>
+            </div>
+            <div class="form-field" style="display:flex; gap:8px;">
+              <div style="flex:1;">
+                <div class="form-label">Dosage (mg)</div>
+                <div class="form-input">e.g. 500</div>
+              </div>
+              <div style="flex:0.55;">
+                <div class="form-label">Pills/Dose</div>
+                <div class="form-input">1</div>
+              </div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">Form Type</div>
+              <div class="chips-row">
+                <div class="chip active">Tablet</div>
+                <div class="chip">Capsule</div>
+                <div class="chip">Syrup</div>
+              </div>
+            </div>
+          </div>
+          <div class="form-card">
+            <div class="form-card-title">Schedule</div>
+            <div class="form-field">
+              <div class="form-label">Frequency</div>
+              <div class="chips-row">
+                <div class="chip active">Once Daily</div>
+                <div class="chip">Twice Daily</div>
+                <div class="chip">3×</div>
+              </div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">Meal Time</div>
+              <div class="chips-row">
+                <div class="chip">Before Meal</div>
+                <div class="chip active">After Meal</div>
+                <div class="chip">Anytime</div>
+              </div>
+            </div>
+            <div class="form-field" style="display:flex; gap:8px;">
+              <div style="flex:1;">
+                <div class="form-label">Start Date</div>
+                <div class="form-input">MM/DD/YYYY</div>
+              </div>
+              <div style="flex:1;">
+                <div class="form-label">End Date</div>
+                <div class="form-input">MM/DD/YYYY</div>
+              </div>
+            </div>
+          </div>
+          <div class="submit-btn">Add Medication</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phones-row -->
+
+<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+<div style="text-align:center; margin-top: 16px;">
+  <div style="font-size:11px; color:rgba(255,255,255,0.2); letter-spacing:0.5px;">
+    Health Telematix · React Native 0.84 · TypeScript · Redux Toolkit · React Navigation 7
+  </div>
+</div>
+
+</body>
+</html>

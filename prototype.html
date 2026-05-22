@@ -1,0 +1,2587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Health Telematix — Interactive Prototype</title>
+<style>
+/* ─── Reset & base ─────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0a0f1a;font-family:-apple-system,BlinkMacSystemFont,'Inter','SF Pro Text','Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;min-height:100vh}
+
+/* ─── Page shell ───────────────────────────────────────────────────────────── */
+.page-shell{display:flex;flex-direction:column;align-items:center;gap:20px;padding:32px 20px 48px}
+.brand-row{display:flex;align-items:center;gap:10px}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:#1A2D45}
+.brand-txt{font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase}
+
+/* ─── iPhone frame ─────────────────────────────────────────────────────────── */
+.iphone{
+  position:relative;width:375px;height:812px;
+  background:linear-gradient(160deg,#5e5e62 0%,#3d3d3f 35%,#2e2e30 65%,#1e1e1f 100%);
+  border-radius:50px;padding:10px;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 50px 100px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.1);
+  overflow:hidden;
+}
+.iphone-screen{
+  width:100%;height:100%;border-radius:42px;
+  overflow:hidden;position:relative;background:#f8fafc;
+}
+/* Dynamic island */
+.iphone-screen::before{
+  content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  width:90px;height:28px;background:#000;border-radius:14px;z-index:200;
+}
+
+/* ─── Status bar ───────────────────────────────────────────────────────────── */
+.status-bar{
+  height:48px;display:flex;align-items:flex-end;padding:0 22px 8px;
+  flex-shrink:0;z-index:100;position:relative;
+}
+.sb-time{font-size:14px;font-weight:700;flex:1}
+.sb-icons{display:flex;align-items:center;gap:6px;font-size:12px}
+.sb-icon{width:16px;height:10px;border:1.5px solid currentColor;border-radius:2px;position:relative}
+.sb-icon::after{content:'';position:absolute;inset:2px 10px 2px 2px;background:currentColor;border-radius:1px}
+.sb-wifi{width:14px;height:10px;background:currentColor;clip-path:polygon(50% 90%,15% 30%,85% 30%);border:none}
+.sb-wifi::after{display:none}
+
+/* ─── Screen stack ─────────────────────────────────────────────────────────── */
+.screen-stack{position:absolute;inset:0;overflow:hidden}
+.screen{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  background:#f8fafc;
+  transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+}
+.screen.active{transform:translateX(0)}
+.screen.behind{transform:translateX(-25%)}
+
+/* ─── Tab layout ───────────────────────────────────────────────────────────── */
+.tab-layout{display:flex;flex-direction:column;flex:1;min-height:0}
+.tab-content{flex:1;overflow:hidden;position:relative;min-height:0}
+.tab-pane{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .2s}
+.tab-pane.active{opacity:1;pointer-events:all}
+
+/* ─── Bottom tab bar ───────────────────────────────────────────────────────── */
+.tab-bar-wrap{
+  flex-shrink:0;padding:6px 12px 10px;background:transparent;
+}
+.tab-bar{
+  height:60px;background:#fff;
+  border-radius:20px;
+  box-shadow:0 4px 24px rgba(0,0,0,.10), 0 1px 6px rgba(0,0,0,.06);
+  display:flex;align-items:center;padding:0 4px;
+}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  padding-top:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:opacity .15s;
+}
+.tab-item:active{opacity:.6}
+.tab-svg-off,.tab-svg-on{width:22px;height:22px;display:block}
+.tab-item .tab-svg-on{display:none}
+.tab-item.active .tab-svg-off{display:none}
+.tab-item.active .tab-svg-on{display:block}
+.tab-lbl{font-size:10px;font-weight:500;color:#94A3B8;transition:color .15s}
+.tab-item.active .tab-lbl{color:#1A2D45;font-weight:700}
+
+/* ─── Screen header ────────────────────────────────────────────────────────── */
+.s-header{
+  height:54px;background:#fff;border-bottom:1px solid #F0F4F8;
+  display:flex;align-items:center;padding:0 16px;flex-shrink:0;gap:10px;
+}
+.s-header-title{font-size:17px;font-weight:700;color:#1A1A2E;flex:1}
+.s-header-right{font-size:13px;font-weight:600;color:#1A2D45;cursor:pointer}
+.back-btn{
+  width:36px;height:36px;border-radius:18px;border:1.5px solid #E2E8F0;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:20px;color:#1A1A2E;flex-shrink:0;transition:background .15s;
+}
+.back-btn:active{background:#F1F5F9}
+
+/* ─── Scrollable body ──────────────────────────────────────────────────────── */
+.scroll-body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.scroll-body::-webkit-scrollbar{display:none}
+
+/* ════════════════════════════════════════════════════
+   LOGIN SCREEN
+════════════════════════════════════════════════════ */
+#screen-login{background:#fff}
+.login-wrap{flex:1;display:flex;flex-direction:column;padding:0 24px 32px;overflow-y:auto}
+.login-wrap::-webkit-scrollbar{display:none}
+
+.login-brand{display:flex;flex-direction:column;align-items:center;padding:24px 0 10px}
+.login-mark{
+  width:48px;height:48px;border-radius:14px;
+  background:#0D1825;display:flex;align-items:center;justify-content:center;
+  margin-bottom:8px;
+  box-shadow:0 6px 18px rgba(3,4,94,.4);
+}
+.login-initials{font-size:16px;font-weight:900;color:#fff;letter-spacing:1px}
+.login-appname{font-size:10px;font-weight:600;color:#94A3B8;letter-spacing:1.5px;text-transform:uppercase}
+
+.login-illustration{display:flex;justify-content:center;align-items:center;padding:4px 0 20px}
+
+.login-headline{font-size:22px;font-weight:800;color:#0f172a;letter-spacing:-.3px;line-height:1.2;margin-bottom:6px}
+.login-sub{font-size:13px;color:#94A3B8;line-height:1.6;margin-bottom:20px}
+
+.field-label{font-size:11px;font-weight:700;color:#64748B;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.phone-row{
+  display:flex;align-items:center;height:52px;
+  border:2px solid #E2E8F0;border-radius:12px;background:#fff;
+  overflow:hidden;margin-bottom:4px;transition:border-color .2s;
+}
+.phone-row:focus-within{border-color:#1A2D45}
+.phone-row.error{border-color:#ef4444}
+.country-pill{
+  display:flex;align-items:center;gap:3px;padding:0 14px;height:100%;
+  font-size:14px;font-weight:600;color:#1A1A2E;
+  border-right:1.5px solid #E2E8F0;white-space:nowrap;
+  cursor:pointer;flex-shrink:0;
+}
+.phone-input{
+  flex:1;height:100%;padding:0 14px;border:none;outline:none;
+  font-size:16px;font-weight:500;color:#1A1A2E;background:transparent;
+}
+.phone-input::placeholder{color:#CBD5E1}
+.err-msg{font-size:12px;color:#ef4444;padding-left:4px;min-height:0;line-height:1.4}
+
+.cta-btn{
+  height:52px;border-radius:12px;background:#1A2D45;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#fff;cursor:pointer;
+  margin-top:24px;border:none;width:100%;
+  transition:background .15s,transform .1s;user-select:none;
+}
+.cta-btn:active{background:#005a8e;transform:scale(.98)}
+.cta-btn:disabled{background:#CBD5E1;cursor:not-allowed}
+.cta-btn.loading{position:relative;pointer-events:none}
+.cta-btn.loading::after{
+  content:'';position:absolute;width:20px;height:20px;
+  border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.privacy-row{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:3px;
+  font-size:12px;color:#94A3B8;text-align:center;margin-top:28px;line-height:1.6;
+}
+.privacy-link{color:#1A2D45;font-weight:600;cursor:pointer}
+
+/* OTP step */
+.otp-back{
+  width:40px;height:40px;border-radius:20px;border:1.5px solid #E2E8F0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;color:#1A1A2E;cursor:pointer;margin-bottom:22px;
+  flex-shrink:0;transition:background .15s;
+}
+.otp-back:active{background:#F1F5F9}
+.otp-boxes{display:flex;gap:7px;margin-bottom:6px;width:100%}
+.otp-box{
+  flex:1;min-width:0;height:52px;border-radius:12px;
+  border:2px solid #E2E8F0;
+  font-size:20px;font-weight:500;color:#1A1A2E;
+  text-align:center;outline:none;background:transparent;
+  transition:background .2s;caret-color:#1A2D45;
+}
+.otp-box:focus{border-color:#1A2D45}
+.otp-box.filled{background:rgba(26,45,69,.06)}
+.otp-box.error{border-color:#ef4444;background:rgba(239,68,68,.04)}
+
+/* OTP step redesign */
+.otp-headline{font-size:22px;font-weight:800;color:#0f172a;letter-spacing:-.3px;line-height:1.2;margin-bottom:8px}
+.otp-no-code-row{display:flex;align-items:center;justify-content:center;gap:5px;padding:12px 0 20px}
+.no-code-txt{font-size:13px;color:#64748B}
+.resend-link{font-size:13px;font-weight:800;color:#1A2D45;cursor:pointer}
+.resend-link:active{opacity:.6}
+.resend-row{display:flex;justify-content:center;padding:10px 0 18px}
+.timer-txt{font-size:13px;color:#94A3B8}
+.resend-btn{font-size:13px;font-weight:700;color:#1A2D45;cursor:pointer}
+.resend-btn:active{opacity:.6}
+
+/* ════════════════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════════════════ */
+.hero-card{
+  display:flex;gap:14px;padding:14px 16px;background:#fff;
+  border-bottom:1px solid #F0F4F8;cursor:pointer;
+  transition:background .12s;
+}
+.hero-card:active{background:#F8FAFC}
+.hero-thumb{
+  width:64px;height:72px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+}
+.hero-info{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.hero-name{font-size:14px;font-weight:700;color:#1A1A2E}
+.hero-pub{font-size:12px;font-weight:500;color:#1A2D45}
+.hero-appear{font-size:11px;color:#94A3B8}
+.hero-arrow{display:flex;align-items:center;color:#CBD5E1;font-size:20px}
+
+/* Hero Detail */
+.detail-hero-banner{
+  margin:14px 14px 0;border-radius:14px;overflow:hidden;
+  display:flex;align-items:center;gap:16px;
+  padding:20px 20px;
+}
+.detail-hero-avatar{font-size:56px;flex-shrink:0}
+.detail-hero-name{font-size:22px;font-weight:800;color:#fff;line-height:1.2}
+.detail-hero-pub{font-size:13px;color:rgba(255,255,255,.65);margin-top:4px}
+.info-card{
+  margin:10px 14px 0;background:#fff;border-radius:12px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden;
+}
+.info-card-hdr{
+  padding:12px 16px 8px;font-size:10px;font-weight:700;color:#94A3B8;
+  letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid #F0F4F8;
+}
+.info-row{
+  display:flex;align-items:flex-start;padding:11px 16px;border-bottom:1px solid #F0F4F8;
+  gap:10px;
+}
+.info-row:last-child{border-bottom:none}
+.info-lbl{font-size:12px;color:#94A3B8;width:100px;flex-shrink:0;padding-top:1px}
+.info-val{font-size:13px;font-weight:600;color:#475569;flex:1;line-height:1.5}
+
+/* ════════════════════════════════════════════════════
+   MEDICATION LIST
+════════════════════════════════════════════════════ */
+.med-top{
+  padding:14px 16px 10px;background:#fff;
+  border-bottom:1px solid #F0F4F8;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.med-top-title{font-size:19px;font-weight:800;color:#1A1A2E}
+.add-med-btn{
+  display:flex;align-items:center;gap:5px;
+  background:#1A2D45;color:#fff;font-size:12px;font-weight:700;
+  padding:7px 13px;border-radius:9px;cursor:pointer;border:none;
+  transition:background .15s,transform .1s;
+}
+.add-med-btn:active{background:#005a8e;transform:scale(.96)}
+
+.seg-ctrl{
+  display:flex;background:#fff;border-bottom:2px solid #F0F4F8;
+  flex-shrink:0;
+}
+.seg-btn{
+  flex:1;height:40px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;color:#94A3B8;cursor:pointer;
+  border-bottom:2.5px solid transparent;margin-bottom:-2px;
+  transition:color .15s,border-color .15s;
+}
+.seg-btn.active{color:#1A2D45;border-color:#1A2D45}
+
+/* ─── Medication card (new design) ─────────────────────────────────────────── */
+.med-card{
+  border-radius:16px;margin:10px 14px 0;overflow:hidden;
+  background:#fff;
+  cursor:pointer;transition:transform .12s,box-shadow .12s;
+  box-shadow:0 1px 6px rgba(0,0,0,.06),0 2px 12px rgba(0,0,0,.04);
+  border:1px solid #F0F4F8;
+}
+.med-card:active{transform:scale(.98);box-shadow:0 2px 10px rgba(0,0,0,.09)}
+.med-bg-active{background:#fff}
+.med-bg-completed{background:#fff}
+.med-bg-inactive{background:#FAFBFC}
+
+.med-card-top{display:flex;align-items:center;gap:12px;padding:14px 14px 12px}
+.med-card-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.med-icon-active{background:#E8F8F4}
+.med-icon-completed{background:#EEF4FF}
+.med-icon-inactive{background:#F1F5F9}
+
+.med-card-info{flex:1;min-width:0}
+.med-card-drug{font-size:14px;font-weight:700;color:#1A1A2E;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.med-card-sub{font-size:12px;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.med-card-check{
+  width:34px;height:34px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.med-check-active{background:#E8F8F4}
+.med-check-completed{background:#EEF4FF}
+.med-check-inactive{background:#F1F5F9}
+
+.med-card-stats{
+  display:flex;
+  border-top:1px solid #F0F4F8;
+  padding:11px 14px 13px;
+}
+.med-stat-col{flex:1;display:flex;flex-direction:column;gap:3px}
+.med-stat-col+.med-stat-col{border-left:1px solid #F0F4F8;padding-left:14px}
+.med-stat-lbl{font-size:9px;font-weight:600;color:#B0BEC5;text-transform:uppercase;letter-spacing:.5px}
+.med-stat-val{font-size:13px;font-weight:600;color:#334155}
+
+.empty-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:40px}
+.empty-ico{font-size:44px;opacity:.35}
+.empty-ttl{font-size:15px;font-weight:700;color:#1A1A2E}
+.empty-sub{font-size:13px;color:#94A3B8;text-align:center;line-height:1.5}
+
+/* ════════════════════════════════════════════════════
+   MEDICATION DETAIL — modern redesign
+════════════════════════════════════════════════════ */
+/* keep legacy classes for status-banner used elsewhere */
+.status-banner{margin:12px 14px 0;border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.banner-active{background:#ECFDF5}.banner-completed{background:#EFF6FF}.banner-inactive{background:#F1F5F9}
+.banner-lbl{font-size:10px;color:#64748B;margin-bottom:3px}.banner-val{font-size:16px;font-weight:800;color:#1A1A2E}
+.status-pill{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:700}
+.pill-active{background:#10B981;color:#fff}.pill-completed{background:#3B82F6;color:#fff}.pill-inactive{background:#94A3B8;color:#fff}
+.time-chips{display:flex;gap:5px;flex-wrap:wrap}
+.time-chip{background:#EFF6FF;color:#2563EB;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700}
+
+/* Hero banner */
+.mdd-hero{
+  margin:14px 14px 0;border-radius:18px;
+  background:linear-gradient(145deg,#1A2D45 0%,#243d5c 100%);
+  padding:18px 18px 16px;
+}
+.mdd-hero-top{display:flex;align-items:flex-start;gap:13px;margin-bottom:16px}
+.mdd-hero-icon{
+  width:50px;height:50px;border-radius:13px;
+  background:rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.mdd-hero-info{flex:1;min-width:0}
+.mdd-drug-name{font-size:18px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:4px}
+.mdd-drug-form{font-size:11px;font-weight:600;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.6px}
+.mdd-status-badge{
+  padding:4px 11px;border-radius:99px;font-size:10px;font-weight:700;
+  flex-shrink:0;align-self:flex-start;margin-top:2px;
+}
+.mdd-status-active{background:rgba(16,185,129,.25);color:#6EE7B7}
+.mdd-status-completed{background:rgba(96,165,250,.2);color:#93C5FD}
+.mdd-status-inactive{background:rgba(255,255,255,.12);color:rgba(255,255,255,.55)}
+.mdd-stats{
+  display:flex;background:rgba(255,255,255,.08);
+  border-radius:12px;overflow:hidden;
+}
+.mdd-stat{flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.mdd-stat+.mdd-stat{border-left:1px solid rgba(255,255,255,.1)}
+.mdd-stat-lbl{font-size:8px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.6px}
+.mdd-stat-val{font-size:14px;font-weight:700;color:#fff}
+
+/* Info cards */
+.mdd-card{
+  margin:10px 14px 0;background:#fff;border-radius:14px;
+  border:1px solid #F0F4F8;overflow:hidden;
+  box-shadow:0 1px 6px rgba(0,0,0,.05);
+}
+.mdd-card-hdr{
+  padding:11px 16px;display:flex;align-items:center;gap:7px;
+  font-size:10px;font-weight:700;color:#94A3B8;letter-spacing:.7px;text-transform:uppercase;
+  border-bottom:1px solid #F0F4F8;background:#FAFBFC;
+}
+.mdd-row{
+  display:flex;align-items:center;padding:12px 16px;
+  border-bottom:1px solid #F8FAFC;gap:10px;
+}
+.mdd-row:last-child{border-bottom:none}
+.mdd-row-lbl{font-size:12px;color:#94A3B8;width:88px;flex-shrink:0}
+.mdd-row-val{font-size:13px;font-weight:600;color:#334155;flex:1}
+
+/* Date range */
+.mdd-date-range{display:flex;align-items:center;gap:8px;padding:12px 16px}
+.mdd-date-pill{
+  background:#F1F5F9;border-radius:9px;padding:7px 12px;
+  display:flex;flex-direction:column;gap:2px;flex:1;
+}
+.mdd-date-pill-lbl{font-size:9px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px}
+.mdd-date-pill-val{font-size:13px;font-weight:700;color:#1A2D45}
+.mdd-date-arrow{color:#CBD5E1;font-size:18px;flex-shrink:0}
+
+/* Intake time chips */
+.mdd-time-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  background:#EEF2F8;color:#1A2D45;
+  padding:6px 12px;border-radius:9px;
+  font-size:12px;font-weight:700;
+}
+
+/* Notes */
+.mdd-notes{padding:13px 16px;font-size:13px;color:#475569;line-height:1.75}
+
+/* Sticky action footer */
+.detail-footer{
+  padding:10px 14px 14px;background:#fff;
+  border-top:1px solid #F0F4F8;flex-shrink:0;display:flex;gap:10px;
+}
+.detail-del-btn{
+  flex:1;height:48px;border-radius:13px;background:#FFF1F1;color:#EF4444;
+  font-size:14px;font-weight:700;border:1.5px solid #FECACA;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .15s,transform .1s;
+}
+.detail-del-btn:active{background:#FEE2E2;transform:scale(.98)}
+.detail-edit-btn{
+  flex:2;height:48px;border-radius:13px;background:#1A2D45;color:#fff;
+  font-size:14px;font-weight:700;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .15s,transform .1s;
+}
+.detail-edit-btn:active{background:#0f1e2e;transform:scale(.98)}
+
+/* ════════════════════════════════════════════════════
+   ADD / EDIT MEDICATION
+════════════════════════════════════════════════════ */
+.form-card{
+  margin:10px 12px 0;background:#fff;border-radius:12px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden;
+}
+.form-card-hdr{
+  padding:12px 16px 8px;font-size:10px;font-weight:700;color:#94A3B8;
+  letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid #F0F4F8;
+}
+.form-field{padding:10px 16px 8px}
+.form-lbl{font-size:11px;font-weight:600;color:#64748B;margin-bottom:6px}
+.form-input{
+  width:100%;height:40px;border:1.5px solid #E2E8F0;border-radius:9px;
+  padding:0 12px;font-size:14px;color:#1A1A2E;background:#fff;outline:none;
+  transition:border-color .2s;
+}
+.form-input:focus{border-color:#1A2D45}
+.form-input.err{border-color:#ef4444}
+.form-input::placeholder{color:#CBD5E1}
+.form-input-ml{height:72px;padding:10px 12px;resize:none;font-size:13px;line-height:1.5}
+.form-err{font-size:11px;color:#ef4444;margin-top:4px}
+
+.chips-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  padding:6px 12px;border-radius:99px;border:1.5px solid #E2E8F0;
+  font-size:12px;font-weight:600;color:#64748B;cursor:pointer;
+  transition:all .15s;
+}
+.chip:active{transform:scale(.95)}
+.chip.active{background:#EEF2F8;border-color:#1A2D45;color:#1A2D45}
+
+.field-row{display:flex;gap:10px}
+.field-row .form-field{flex:1;padding:10px 0 8px}
+.field-row .form-field:first-child{padding-left:16px}
+.field-row .form-field:last-child{padding-right:16px}
+
+.submit-btn{
+  height:50px;border-radius:13px;background:#1A2D45;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#fff;cursor:pointer;border:none;width:100%;
+  transition:background .15s,transform .1s;
+}
+.submit-btn:active{background:#0f1e2e;transform:scale(.98)}
+
+/* ─── Sticky form footer ──────────────────────────────────────────────────── */
+.form-sticky-footer{
+  padding:10px 14px 14px;background:#fff;
+  border-top:1px solid #F0F4F8;flex-shrink:0;
+}
+
+/* ─── Drug search ─────────────────────────────────────────────────────────── */
+.drug-search-wrap{position:relative}
+.drug-dropdown{
+  position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:200;
+  background:#fff;border-radius:10px;
+  box-shadow:0 6px 24px rgba(0,0,0,.11);border:1px solid #E2E8F0;
+  max-height:176px;overflow-y:auto;display:none;
+}
+.drug-dropdown.open{display:block}
+.drug-opt{
+  padding:10px 14px;font-size:13px;color:#334155;cursor:pointer;
+  border-bottom:1px solid #F8FAFC;transition:background .1s;
+}
+.drug-opt:last-child{border-bottom:none}
+.drug-opt:active,.drug-opt:hover{background:#F0F4F8}
+.drug-opt mark{background:none;color:#1A2D45;font-weight:700}
+
+/* ─── Date trigger ────────────────────────────────────────────────────────── */
+.date-trigger{
+  width:100%;height:40px;border:1.5px solid #E2E8F0;border-radius:9px;
+  padding:0 12px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;background:#fff;transition:border-color .2s;
+}
+.date-trigger:active{border-color:#1A2D45}
+.date-trigger.err{border-color:#ef4444}
+.date-trigger-txt{font-size:14px;color:#1A1A2E}
+.date-trigger-ph{font-size:14px;color:#CBD5E1}
+
+/* ─── Calendar bottom sheet ───────────────────────────────────────────────── */
+.cal-backdrop{
+  position:absolute;inset:0;z-index:300;
+  background:rgba(0,0,0,.38);display:none;flex-direction:column;justify-content:flex-end;
+}
+.cal-backdrop.open{display:flex}
+.cal-sheet{
+  background:#fff;border-radius:20px 20px 0 0;
+  padding-bottom:20px;
+}
+.cal-handle{width:36px;height:4px;background:#E2E8F0;border-radius:2px;margin:10px auto 14px}
+.cal-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px 10px;
+}
+.cal-hdr-lbl{font-size:15px;font-weight:700;color:#1A1A2E}
+.cal-hdr-target{font-size:11px;font-weight:600;color:#1A2D45;background:#EEF2F8;padding:3px 9px;border-radius:99px}
+.cal-nav{display:flex;gap:6px}
+.cal-nav-btn{
+  width:30px;height:30px;border-radius:8px;background:#F1F5F9;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px;color:#475569;transition:background .1s;
+  border:none;
+}
+.cal-nav-btn:active{background:#E2E8F0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:0 10px;gap:2px}
+.cal-dow{text-align:center;font-size:9px;font-weight:700;color:#94A3B8;padding:4px 0 6px;text-transform:uppercase}
+.cal-day{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:500;color:#1A1A2E;border-radius:8px;
+  cursor:pointer;transition:background .1s,color .1s;-webkit-tap-highlight-color:transparent;
+}
+.cal-day.empty{cursor:default}
+.cal-day:not(.empty):active{background:#EEF2F8}
+.cal-day.today{font-weight:700;color:#1A2D45}
+.cal-day.selected{background:#1A2D45;color:#fff;font-weight:700}
+.cal-day.today.selected{color:#fff}
+.cal-day.in-range{background:#EEF2F8;color:#1A2D45;border-radius:0}
+.cal-day.range-start{background:#1A2D45;color:#fff;border-radius:8px 0 0 8px}
+.cal-day.range-end{background:#1A2D45;color:#fff;border-radius:0 8px 8px 0}
+
+/* ════════════════════════════════════════════════════
+   CARE PLAN & DEVICES (stubs)
+════════════════════════════════════════════════════ */
+.stub-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.stub-ico{font-size:52px;opacity:.25}
+.stub-ttl{font-size:17px;font-weight:700;color:#1A1A2E}
+.stub-sub{font-size:13px;color:#94A3B8;text-align:center;line-height:1.5;max-width:220px}
+.coming-badge{background:#EFF6FF;color:#2563EB;font-size:11px;font-weight:700;padding:5px 14px;border-radius:99px;margin-top:4px}
+
+/* ════════════════════════════════════════════════════
+   DEVICES MODULE
+════════════════════════════════════════════════════ */
+.device-card{
+  margin:10px 14px 0;background:#fff;border-radius:16px;
+  border:1px solid #F0F4F8;overflow:hidden;
+  box-shadow:0 1px 6px rgba(0,0,0,.05);
+}
+.device-card-inner{display:flex;align-items:center;gap:12px;padding:14px}
+.device-icon-box{
+  width:46px;height:46px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.dib-connected{background:#E8F8F4}
+.dib-disconnected{background:#F1F5F9}
+.device-info{flex:1;min-width:0}
+.device-name{font-size:14px;font-weight:700;color:#1A1A2E;margin-bottom:3px}
+.device-sync{font-size:11px;color:#94A3B8}
+.device-status-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;flex-shrink:0;
+}
+.dsc-connected{background:#ECFDF5;color:#059669}
+.dsc-disconnected{background:#F1F5F9;color:#94A3B8}
+.device-status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+.device-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 14px 12px;border-top:1px solid #F8FAFC;
+}
+.device-conn-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:7px;
+  font-size:10px;font-weight:700;
+}
+.dcb-bt{background:#EEF2FF;color:#6366F1}
+.dcb-api{background:#F0FDF4;color:#059669}
+.device-remove-btn{
+  padding:5px 12px;border-radius:8px;
+  background:#FFF1F1;border:1px solid #FECACA;
+  font-size:11px;font-weight:700;color:#EF4444;cursor:pointer;
+  transition:background .1s;
+}
+.device-remove-btn:active{background:#FEE2E2}
+
+.add-device-row{
+  margin:12px 14px 0;height:50px;border-radius:14px;
+  background:#F8FAFC;border:1.5px dashed #CBD5E1;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-size:13px;font-weight:700;color:#1A2D45;cursor:pointer;
+  transition:background .12s;
+}
+.add-device-row:active{background:#EEF2F8}
+
+.device-section-lbl{
+  margin:16px 14px 0;
+  font-size:10px;font-weight:700;color:#94A3B8;
+  text-transform:uppercase;letter-spacing:.7px;
+}
+
+/* Devices tab header button — matches .add-med-btn */
+.dv-add-btn{
+  display:flex;align-items:center;gap:5px;
+  background:#1A2D45;color:#fff;font-size:12px;font-weight:700;
+  padding:7px 13px;border-radius:9px;cursor:pointer;border:none;
+  transition:background .15s,transform .1s;
+}
+.dv-add-btn:active{background:#005a8e;transform:scale(.96)}
+
+/* Devices sub-tab segmented control */
+.dv-seg{
+  display:flex;background:#fff;border-bottom:2px solid #F0F4F8;
+  flex-shrink:0;
+}
+.dv-seg-btn{
+  flex:1;height:40px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;color:#94A3B8;cursor:pointer;
+  border-bottom:2.5px solid transparent;margin-bottom:-2px;
+  transition:color .15s,border-color .15s;
+}
+.dv-seg-btn.active{color:#1A2D45;border-color:#1A2D45}
+
+/* Modern device card */
+.dv-card{
+  margin:10px 14px 0;background:#fff;border-radius:18px;
+  border:1px solid #F0F4F8;overflow:hidden;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+  transition:transform .12s,box-shadow .12s;
+}
+.dv-card:active{transform:scale(.99);box-shadow:0 1px 5px rgba(0,0,0,.04)}
+.dv-card-top{display:flex;align-items:center;gap:14px;padding:16px 16px 12px}
+.dv-icon-wrap{
+  width:52px;height:52px;border-radius:15px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.dv-icon-wrap.conn{background:linear-gradient(140deg,#E8F8F4 0%,#D1F5EC 100%)}
+.dv-icon-wrap.disc{background:#F1F5F9}
+.dv-card-info{flex:1;min-width:0}
+.dv-card-name{font-size:15px;font-weight:700;color:#1A1A2E;margin-bottom:4px}
+.dv-card-meta{font-size:12px;color:#94A3B8;display:flex;align-items:center;gap:6px}
+.dv-card-meta-dot{width:3px;height:3px;border-radius:50%;background:#CBD5E1;flex-shrink:0}
+.dv-status-pill{
+  display:inline-flex;align-items:center;gap:5px;flex-shrink:0;
+  padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;
+}
+.dv-status-pill.conn{background:#ECFDF5;color:#059669}
+.dv-status-pill.disc{background:#F1F5F9;color:#94A3B8}
+.dv-status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.dv-card-divider{margin:0 16px;height:1px;background:#F8FAFC}
+.dv-card-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 14px}
+.dv-card-reading{font-size:12px;color:#64748B;font-weight:500}
+.dv-card-reading strong{color:#1A2D45;font-weight:700}
+.dv-card-bt-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:7px;
+  background:#EEF2FF;color:#6366F1;font-size:10px;font-weight:700;
+}
+.dv-card-disconn-foot{
+  padding:10px 16px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.dv-reconnect-btn{
+  padding:7px 14px;border-radius:10px;
+  background:#1A2D45;color:#fff;border:none;
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:background .12s,transform .1s;
+}
+.dv-reconnect-btn:active{background:#0f1e2e;transform:scale(.96)}
+.dv-last-sync{font-size:11px;color:#94A3B8}
+.dv-empty-tab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 24px;gap:10px;
+}
+.dv-empty-ico{font-size:36px;opacity:.5}
+.dv-empty-ttl{font-size:15px;font-weight:700;color:#1A2D45}
+.dv-empty-sub{font-size:13px;color:#94A3B8;text-align:center;line-height:1.5;max-width:220px}
+
+/* Connect device screen */
+.avail-card{
+  margin:8px 14px 0;background:#fff;border-radius:14px;
+  border:1px solid #F0F4F8;padding:14px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 1px 4px rgba(0,0,0,.04);
+}
+.avail-card-info{flex:1;min-width:0}
+.avail-card-name{font-size:14px;font-weight:700;color:#1A1A2E;margin-bottom:3px}
+.avail-card-desc{font-size:11px;color:#94A3B8;line-height:1.45}
+.avail-connect-btn{
+  padding:8px 14px;border-radius:10px;
+  background:#1A2D45;color:#fff;
+  font-size:12px;font-weight:700;border:none;cursor:pointer;
+  flex-shrink:0;transition:background .12s,transform .1s;
+}
+.avail-connect-btn:active{background:#0f1e2e;transform:scale(.96)}
+.avail-connect-btn.done{
+  background:#ECFDF5;color:#059669;
+  border:1px solid #A7F3D0;cursor:default;
+}
+.avail-section-hdr{
+  margin:14px 14px 6px;
+  padding:10px 12px;border-radius:10px;background:#F8FAFC;
+  display:flex;align-items:center;gap:7px;
+  font-size:10px;font-weight:700;color:#64748B;letter-spacing:.5px;text-transform:uppercase;
+}
+
+/* ════════════════════════════════════════════════════
+   ACCOUNT SCREEN
+════════════════════════════════════════════════════ */
+.acct-avatar{
+  width:72px;height:72px;border-radius:36px;
+  background:linear-gradient(135deg,#1A2D45,#0D1825);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:800;color:#fff;
+  margin:24px auto 10px;
+}
+.acct-name{text-align:center;font-size:18px;font-weight:800;color:#1A1A2E;margin-bottom:4px}
+.acct-role{text-align:center;font-size:12px;color:#94A3B8;margin-bottom:24px}
+.acct-item{
+  display:flex;align-items:center;gap:14px;padding:14px 20px;
+  background:#fff;border-bottom:1px solid #F0F4F8;cursor:pointer;
+  transition:background .12s;
+}
+.acct-item:active{background:#F8FAFC}
+.acct-item-ico{font-size:20px;width:28px;text-align:center}
+.acct-item-lbl{font-size:14px;font-weight:600;color:#1A1A2E;flex:1}
+.acct-item-arrow{color:#CBD5E1;font-size:18px}
+.acct-item.danger .acct-item-lbl{color:#ef4444}
+
+/* ════════════════════════════════════════════════════
+   MODAL / ALERT
+════════════════════════════════════════════════════ */
+.modal-backdrop{
+  position:absolute;inset:0;background:rgba(0,0,0,.4);
+  z-index:300;display:flex;align-items:flex-end;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+.modal-sheet{
+  width:100%;background:#fff;border-radius:20px 20px 0 0;
+  padding:24px 24px 40px;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.modal-backdrop.open .modal-sheet{transform:translateY(0)}
+.modal-title{font-size:17px;font-weight:800;color:#1A1A2E;margin-bottom:8px}
+.modal-msg{font-size:14px;color:#64748B;line-height:1.6;margin-bottom:28px}
+.modal-actions{display:flex;gap:10px}
+.modal-btn{
+  flex:1;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;cursor:pointer;border:none;
+}
+.modal-cancel{background:#F1F5F9;color:#475569}
+.modal-cancel:active{background:#E2E8F0}
+.modal-confirm{background:#ef4444;color:#fff}
+.modal-confirm:active{background:#dc2626}
+
+/* ─── Toast notification ───────────────────────────────────────────────────── */
+.toast{
+  position:absolute;bottom:80px;left:16px;right:16px;
+  background:#1A1A2E;color:#fff;padding:13px 16px;border-radius:12px;
+  font-size:13px;font-weight:600;z-index:400;
+  transform:translateY(20px);opacity:0;transition:all .25s;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+  display:flex;align-items:center;gap:8px;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:#065f46;border:1px solid rgba(16,185,129,.3)}
+.toast.error{background:#7f1d1d;border:1px solid rgba(239,68,68,.3)}
+.toast-ico{font-size:16px}
+</style>
+</head>
+<body>
+<div class="page-shell">
+  <div class="brand-row">
+    <div class="brand-dot"></div>
+    <span class="brand-txt">Health Telematix · Interactive Prototype</span>
+    <div class="brand-dot"></div>
+  </div>
+
+  <!-- iPhone frame -->
+  <div class="iphone">
+    <div class="iphone-screen" id="app">
+
+      <!-- SCREEN: LOGIN -->
+      <div class="screen active" id="screen-login" style="background:#fff">
+        <div class="status-bar" style="color:#0f172a">
+          <span class="sb-time">9:41</span>
+          <span class="sb-icons">
+            <svg class="sb-wifi" viewBox="0 0 24 24" width="14" height="10" fill="currentColor"><path d="M12 17l-5-5a7 7 0 0110 0l-5 5zm0 4l-2-2a3 3 0 014 0l-2 2zm-8-11a11 11 0 0116 0l-1.5 1.5A9 9 0 008.5 10L4 6zm0 0"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="11" fill="currentColor"><rect x="1" y="6" width="18" height="12" rx="2" ry="2" opacity=".3"/><rect x="1" y="6" width="18" height="12" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="8.5" width="12" height="7" rx="1"/><path d="M21 10v4a2 2 0 000-4z"/></svg>
+          </span>
+        </div>
+
+        <!-- Step wrapper (phone / otp toggled by JS) -->
+        <div class="login-wrap" id="login-phone-step">
+          <div class="login-brand">
+            <div class="login-mark"><span class="login-initials">HT</span></div>
+            <span class="login-appname">Health Telematix</span>
+          </div>
+          <div class="login-illustration">
+            <svg viewBox="0 0 240 200" width="192" height="160" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="120" cy="100" r="82" fill="#EEF4FF"/>
+              <circle cx="120" cy="100" r="60" fill="#E0EDFF"/>
+              <rect x="87" y="38" width="66" height="112" rx="14" fill="white" stroke="#C7DCFF" stroke-width="2"/>
+              <rect x="108" y="40" width="24" height="7" rx="3.5" fill="#EEF4FF"/>
+              <rect x="93" y="52" width="54" height="82" rx="6" fill="#F5F9FF"/>
+              <rect x="97" y="58" width="3" height="5" rx="1" fill="#1A2D45" opacity="0.35"/>
+              <rect x="101.5" y="55" width="3" height="8" rx="1" fill="#1A2D45" opacity="0.6"/>
+              <rect x="106" y="52" width="3" height="11" rx="1" fill="#1A2D45"/>
+              <circle cx="133" cy="61" r="4" fill="#FF6B9D" opacity="0.8"/>
+              <circle cx="141" cy="61" r="3" fill="#FF6B9D" opacity="0.5"/>
+              <circle cx="148" cy="61" r="2" fill="#FF6B9D" opacity="0.3"/>
+              <line x1="93" y1="77" x2="147" y2="77" stroke="#E2E8F0" stroke-width="1"/>
+              <path d="M95,100 L103,100 L107,86 L111,116 L115,86 L119,116 L123,100 L146,100" fill="none" stroke="#1A2D45" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="119" cy="116" r="3" fill="#1A2D45" opacity="0.45"/>
+              <rect x="93" y="128" width="54" height="1" fill="#E2E8F0"/>
+              <rect x="110" y="143" width="20" height="3" rx="1.5" fill="#CBD5E1"/>
+              <g transform="translate(170,46) rotate(-28)">
+                <rect x="-10" y="-5.5" width="20" height="11" rx="5.5" fill="#E0EDFF" stroke="#1A2D45" stroke-width="1.5"/>
+                <line x1="0" y1="-5.5" x2="0" y2="5.5" stroke="#1A2D45" stroke-width="1.5"/>
+              </g>
+              <path d="M64,50 C64,46.5 67.5,44 70,47 C72.5,44 76,46.5 76,50 C76,53.5 70,58.5 70,58.5 C70,58.5 64,53.5 64,50 Z" fill="#FF6B9D" opacity="0.8"/>
+              <g transform="translate(176,140)">
+                <rect x="-3" y="-9" width="6" height="18" rx="2.5" fill="#1A2D45" opacity="0.7"/>
+                <rect x="-9" y="-3" width="18" height="6" rx="2.5" fill="#1A2D45" opacity="0.7"/>
+              </g>
+              <g transform="translate(60,138)" opacity="0.65">
+                <path d="M-9,4 Q0,-6 9,4" fill="none" stroke="#4A6FA5" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M-5.5,1.5 Q0,-4 5.5,1.5" fill="none" stroke="#4A6FA5" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="0" cy="4.5" r="2" fill="#4A6FA5"/>
+              </g>
+              <circle cx="48" cy="74" r="3" fill="#4A6FA5" opacity="0.45"/>
+              <circle cx="193" cy="84" r="2.5" fill="#1A2D45" opacity="0.4"/>
+              <circle cx="52" cy="150" r="2" fill="#4A6FA5" opacity="0.35"/>
+              <circle cx="185" cy="52" r="2" fill="#0D1825" opacity="0.25"/>
+              <circle cx="44" cy="112" r="1.5" fill="#1A2D45" opacity="0.3"/>
+              <circle cx="200" cy="120" r="3" fill="#4A6FA5" opacity="0.3"/>
+              <g transform="translate(90,25)" opacity="0.5">
+                <line x1="0" y1="-5" x2="0" y2="5" stroke="#1A2D45" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="-5" y1="0" x2="5" y2="0" stroke="#1A2D45" stroke-width="1.5" stroke-linecap="round"/>
+              </g>
+              <g transform="translate(155,18)" opacity="0.4">
+                <line x1="0" y1="-4" x2="0" y2="4" stroke="#4A6FA5" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="-4" y1="0" x2="4" y2="0" stroke="#4A6FA5" stroke-width="1.5" stroke-linecap="round"/>
+              </g>
+              <g transform="translate(198,162)" opacity="0.35">
+                <line x1="0" y1="-3.5" x2="0" y2="3.5" stroke="#1A2D45" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="-3.5" y1="0" x2="3.5" y2="0" stroke="#1A2D45" stroke-width="1.5" stroke-linecap="round"/>
+              </g>
+            </svg>
+          </div>
+          <div class="login-headline">Welcome Back</div>
+          <div class="login-sub">Sign in to your Health Telematix account</div>
+
+          <div class="field-label">Mobile Number</div>
+          <div class="phone-row" id="phone-row">
+            <div class="country-pill">🇺🇸 +1 ▾</div>
+            <input class="phone-input" id="phone-input" type="tel" maxlength="14"
+              placeholder="(555) 000-0000" inputmode="numeric" autocomplete="tel"/>
+          </div>
+          <div class="err-msg" id="phone-err"></div>
+
+          <button class="cta-btn" id="send-otp-btn" onclick="onSendOtp()">Send OTP</button>
+
+          <div class="privacy-row">
+            By continuing, you agree to our
+            <span class="privacy-link">Privacy Policy</span>
+          </div>
+        </div>
+
+        <div class="login-wrap" id="login-otp-step" style="display:none">
+
+          <!-- Brand — identical to login screen -->
+          <div class="login-brand">
+            <div class="login-mark"><span class="login-initials">HT</span></div>
+            <span class="login-appname">Health Telematix</span>
+          </div>
+
+          <!-- Illustration — same size as login screen -->
+          <div class="login-illustration">
+            <svg viewBox="0 0 240 200" width="192" height="160" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="120" cy="100" r="82" fill="#EEF4FF"/>
+              <circle cx="120" cy="100" r="60" fill="#E0EDFF"/>
+              <rect x="87" y="38" width="66" height="112" rx="14" fill="white" stroke="#C7DCFF" stroke-width="2"/>
+              <rect x="108" y="40" width="24" height="7" rx="3.5" fill="#EEF4FF"/>
+              <rect x="93" y="52" width="54" height="82" rx="6" fill="#F5F9FF"/>
+              <rect x="97" y="58" width="3" height="5" rx="1" fill="#1A2D45" opacity="0.35"/>
+              <rect x="101.5" y="55" width="3" height="8" rx="1" fill="#1A2D45" opacity="0.6"/>
+              <rect x="106" y="52" width="3" height="11" rx="1" fill="#1A2D45"/>
+              <circle cx="133" cy="61" r="4" fill="#FF6B9D" opacity="0.8"/>
+              <circle cx="141" cy="61" r="3" fill="#FF6B9D" opacity="0.5"/>
+              <circle cx="148" cy="61" r="2" fill="#FF6B9D" opacity="0.3"/>
+              <line x1="93" y1="77" x2="147" y2="77" stroke="#E2E8F0" stroke-width="1"/>
+              <path d="M95,100 L103,100 L107,86 L111,116 L115,86 L119,116 L123,100 L146,100" fill="none" stroke="#1A2D45" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="119" cy="116" r="3" fill="#1A2D45" opacity="0.45"/>
+              <rect x="93" y="128" width="54" height="1" fill="#E2E8F0"/>
+              <rect x="110" y="143" width="20" height="3" rx="1.5" fill="#CBD5E1"/>
+              <g transform="translate(170,46) rotate(-28)">
+                <rect x="-10" y="-5.5" width="20" height="11" rx="5.5" fill="#E0EDFF" stroke="#1A2D45" stroke-width="1.5"/>
+                <line x1="0" y1="-5.5" x2="0" y2="5.5" stroke="#1A2D45" stroke-width="1.5"/>
+              </g>
+              <path d="M64,50 C64,46.5 67.5,44 70,47 C72.5,44 76,46.5 76,50 C76,53.5 70,58.5 70,58.5 C70,58.5 64,53.5 64,50 Z" fill="#FF6B9D" opacity="0.8"/>
+              <g transform="translate(176,140)">
+                <rect x="-3" y="-9" width="6" height="18" rx="2.5" fill="#1A2D45" opacity="0.7"/>
+                <rect x="-9" y="-3" width="18" height="6" rx="2.5" fill="#1A2D45" opacity="0.7"/>
+              </g>
+              <g transform="translate(60,138)" opacity="0.65">
+                <path d="M-9,4 Q0,-6 9,4" fill="none" stroke="#4A6FA5" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M-5.5,1.5 Q0,-4 5.5,1.5" fill="none" stroke="#4A6FA5" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="0" cy="4.5" r="2" fill="#4A6FA5"/>
+              </g>
+              <circle cx="48" cy="74" r="3" fill="#4A6FA5" opacity="0.45"/>
+              <circle cx="193" cy="84" r="2.5" fill="#1A2D45" opacity="0.4"/>
+              <circle cx="52" cy="150" r="2" fill="#4A6FA5" opacity="0.35"/>
+              <circle cx="185" cy="52" r="2" fill="#0D1825" opacity="0.25"/>
+              <circle cx="44" cy="112" r="1.5" fill="#1A2D45" opacity="0.3"/>
+              <circle cx="200" cy="120" r="3" fill="#4A6FA5" opacity="0.3"/>
+              <g transform="translate(90,25)" opacity="0.5">
+                <line x1="0" y1="-5" x2="0" y2="5" stroke="#1A2D45" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="-5" y1="0" x2="5" y2="0" stroke="#1A2D45" stroke-width="1.5" stroke-linecap="round"/>
+              </g>
+              <g transform="translate(155,18)" opacity="0.4">
+                <line x1="0" y1="-4" x2="0" y2="4" stroke="#4A6FA5" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="-4" y1="0" x2="4" y2="0" stroke="#4A6FA5" stroke-width="1.5" stroke-linecap="round"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Back button above heading -->
+          <div class="otp-back" onclick="onOtpBack()" style="margin-bottom:16px">←</div>
+
+          <!-- Heading -->
+          <div class="otp-headline">Verify your phone number</div>
+          <div class="login-sub">We've sent an SMS with an activation code to your phone <span id="otp-sub" style="font-weight:700;color:#1A2D45"></span></div>
+
+          <!-- OTP boxes -->
+          <div class="otp-boxes" id="otp-boxes">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="0">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="1">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="2">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="3">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="4">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="5">
+          </div>
+          <div class="err-msg" id="otp-err"></div>
+
+          <!-- Resend -->
+          <div class="resend-row">
+            <span class="timer-txt" id="resend-timer"></span>
+          </div>
+          <div class="otp-no-code-row" id="resend-btn" style="display:none">
+            <span class="no-code-txt">I didn't receive a code</span>
+            <span class="resend-link" onclick="onResend()">Resend</span>
+          </div>
+
+          <button class="cta-btn" id="verify-btn" onclick="onVerifyOtp()">Verify &amp; Sign In</button>
+        </div>
+      </div>
+
+      <!-- SCREEN: HOME (tab layout) -->
+      <div class="screen" id="screen-home">
+        <div class="status-bar" style="color:#0f172a">
+          <span class="sb-time">9:41</span>
+          <span class="sb-icons">
+            <svg viewBox="0 0 24 24" width="14" height="10" fill="currentColor"><path d="M12 17l-5-5a7 7 0 0110 0l-5 5zm0 4l-2-2a3 3 0 014 0l-2 2zm-8-11a11 11 0 0116 0"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="11" fill="currentColor"><rect x="1" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="8.5" width="12" height="7" rx="1"/><path d="M21 10v4a2 2 0 000-4z"/></svg>
+          </span>
+        </div>
+        <div class="tab-layout">
+          <div class="tab-content">
+
+            <!-- TAB: Dashboard -->
+            <div class="tab-pane active" id="tab-dashboard">
+              <div class="s-header">
+                <span class="s-header-title">Dashboard</span>
+                <span class="s-header-right" onclick="goAccount()">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1A2D45" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                </span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px 0;text-align:center">
+                <!-- Health dashboard SVG illustration -->
+                <svg viewBox="0 0 260 220" width="220" height="186" style="margin-bottom:28px">
+                  <!-- Background blobs -->
+                  <circle cx="130" cy="110" r="90" fill="#EEF4FF"/>
+                  <circle cx="130" cy="110" r="66" fill="#E0EDFF"/>
+                  <!-- Monitor body -->
+                  <rect x="60" y="52" width="140" height="96" rx="12" fill="#fff" stroke="#C7DCFF" stroke-width="2"/>
+                  <!-- Monitor stand -->
+                  <rect x="116" y="148" width="28" height="14" rx="4" fill="#E0EDFF" stroke="#C7DCFF" stroke-width="1.5"/>
+                  <rect x="100" y="160" width="60" height="6" rx="3" fill="#C7DCFF"/>
+                  <!-- Screen area -->
+                  <rect x="68" y="60" width="124" height="80" rx="8" fill="#F5F9FF"/>
+                  <!-- Grid lines -->
+                  <line x1="68" y1="80" x2="192" y2="80" stroke="#E2E8F0" stroke-width="1"/>
+                  <line x1="68" y1="100" x2="192" y2="100" stroke="#E2E8F0" stroke-width="1"/>
+                  <line x1="68" y1="120" x2="192" y2="120" stroke="#E2E8F0" stroke-width="1"/>
+                  <line x1="98" y1="60" x2="98" y2="140" stroke="#E2E8F0" stroke-width="1"/>
+                  <line x1="130" y1="60" x2="130" y2="140" stroke="#E2E8F0" stroke-width="1"/>
+                  <line x1="162" y1="60" x2="162" y2="140" stroke="#E2E8F0" stroke-width="1"/>
+                  <!-- ECG / heartbeat line -->
+                  <path d="M72,100 L86,100 L92,82 L98,120 L104,82 L110,120 L116,100 L192,100"
+                    fill="none" stroke="#1A2D45" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- Glowing dot -->
+                  <circle cx="116" cy="100" r="4" fill="#1A2D45" opacity=".3"/>
+                  <circle cx="116" cy="100" r="2.5" fill="#1A2D45"/>
+                  <!-- Floating stat card — top right -->
+                  <rect x="155" y="42" width="52" height="26" rx="8" fill="#fff" stroke="#C7DCFF" stroke-width="1.5" filter="url(#cs)"/>
+                  <text x="181" y="52" text-anchor="middle" font-size="7" font-weight="700" fill="#94A3B8" letter-spacing="0.5">BPM</text>
+                  <text x="181" y="63" text-anchor="middle" font-size="11" font-weight="800" fill="#1A2D45">72</text>
+                  <!-- Heart on card -->
+                  <path d="M166,49 C166,47.3 167.7,46 169,47.5 C170.3,46 172,47.3 172,49 C172,50.8 169,53 169,53 C169,53 166,50.8 166,49 Z" fill="#FF6B9D"/>
+                  <!-- Floating stat card — top left -->
+                  <rect x="53" y="42" width="52" height="26" rx="8" fill="#fff" stroke="#C7DCFF" stroke-width="1.5"/>
+                  <text x="79" y="52" text-anchor="middle" font-size="7" font-weight="700" fill="#94A3B8" letter-spacing="0.5">SPO2</text>
+                  <text x="79" y="63" text-anchor="middle" font-size="11" font-weight="800" fill="#1A2D45">98%</text>
+                  <!-- Pill icon bottom left -->
+                  <g transform="translate(58,168) rotate(-20)">
+                    <rect x="-12" y="-6" width="24" height="12" rx="6" fill="#E0EDFF" stroke="#1A2D45" stroke-width="1.5"/>
+                    <line x1="0" y1="-6" x2="0" y2="6" stroke="#1A2D45" stroke-width="1.5"/>
+                  </g>
+                  <!-- Cross icon bottom right -->
+                  <g transform="translate(200,168)">
+                    <rect x="-3.5" y="-10" width="7" height="20" rx="3" fill="#1A2D45" opacity=".65"/>
+                    <rect x="-10" y="-3.5" width="20" height="7" rx="3" fill="#1A2D45" opacity=".65"/>
+                  </g>
+                  <!-- Decorative dots -->
+                  <circle cx="44" cy="90" r="3.5" fill="#4A6FA5" opacity=".4"/>
+                  <circle cx="216" cy="80" r="3" fill="#1A2D45" opacity=".35"/>
+                  <circle cx="48" cy="155" r="2.5" fill="#4A6FA5" opacity=".35"/>
+                  <circle cx="212" cy="155" r="2" fill="#1A2D45" opacity=".25"/>
+                  <defs>
+                    <filter id="cs" x="-20%" y="-20%" width="140%" height="140%">
+                      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(26,45,69,.12)"/>
+                    </filter>
+                  </defs>
+                </svg>
+                <div style="font-size:20px;font-weight:800;color:#1A2D45;margin-bottom:10px;letter-spacing:-.2px">Dashboard Coming Soon</div>
+                <div style="font-size:14px;color:#94A3B8;line-height:1.6;max-width:240px">Your health metrics, vitals, and activity summary will appear here.</div>
+                <div style="margin-top:20px;padding:8px 20px;background:#EEF4FF;border-radius:20px;font-size:12px;font-weight:700;color:#1A2D45;letter-spacing:.5px">IN DEVELOPMENT</div>
+              </div>
+            </div>
+
+            <!-- TAB: Care Plan -->
+            <div class="tab-pane" id="tab-careplan">
+              <div class="s-header"><span class="s-header-title">Care Plan</span></div>
+              <div class="stub-wrap">
+                <div class="stub-ico">📋</div>
+                <div class="stub-ttl">Care Plans</div>
+                <div class="stub-sub">Your personalized care plans will appear here once assigned by your care team.</div>
+                <div class="coming-badge">Coming Soon</div>
+              </div>
+            </div>
+
+            <!-- TAB: Medication (list) -->
+            <div class="tab-pane" id="tab-medication">
+              <div class="med-top">
+                <span class="med-top-title">My Medications</span>
+                <button class="add-med-btn" onclick="goAddMedication(null)">+ Add New</button>
+              </div>
+              <div class="seg-ctrl">
+                <div class="seg-btn active" id="seg-current" onclick="switchMedTab('current')">Current</div>
+                <div class="seg-btn" id="seg-past" onclick="switchMedTab('past')">Past</div>
+              </div>
+              <div class="scroll-body" id="med-list-body"><!-- filled by JS --></div>
+            </div>
+
+            <!-- TAB: Devices -->
+            <div class="tab-pane" id="tab-devices">
+              <div class="s-header">
+                <span class="s-header-title">My Devices</span>
+                <button class="dv-add-btn" onclick="goAddDevice()">+ Add New</button>
+              </div>
+              <div class="dv-seg" id="dv-seg">
+                <div class="dv-seg-btn active" id="dseg-connected" onclick="switchDeviceTab('connected')">Connected</div>
+                <div class="dv-seg-btn" id="dseg-disconnected" onclick="switchDeviceTab('disconnected')">Disconnected</div>
+              </div>
+              <div class="scroll-body" id="device-list-body" style="padding-bottom:20px"><!-- filled by JS --></div>
+            </div>
+
+          </div><!-- /tab-content -->
+
+          <!-- Bottom Tab Bar -->
+          <div class="tab-bar-wrap">
+          <div class="tab-bar">
+            <!-- Dashboard -->
+            <div class="tab-item active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">
+              <!-- outline (inactive) -->
+              <svg class="tab-svg-off" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+              </svg>
+              <!-- filled (active) -->
+              <svg class="tab-svg-on" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" fill="#1A2D45"/>
+                <rect x="14" y="3" width="7" height="7" rx="1.5" fill="#1A2D45"/>
+                <rect x="3" y="14" width="7" height="7" rx="1.5" fill="#1A2D45"/>
+                <rect x="14" y="14" width="7" height="7" rx="1.5" fill="#4A6FA5" opacity=".7"/>
+              </svg>
+              <span class="tab-lbl active">Dashboard</span>
+            </div>
+            <!-- Care Plan -->
+            <div class="tab-item" id="tab-btn-careplan" onclick="switchTab('careplan')">
+              <svg class="tab-svg-off" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+                <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/>
+              </svg>
+              <svg class="tab-svg-on" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="#1A2D45" stroke-width="2" fill="none"/>
+                <rect x="9" y="3" width="6" height="4" rx="1" fill="#1A2D45"/>
+                <line x1="9" y1="12" x2="15" y2="12" stroke="#1A2D45" stroke-width="2"/>
+                <line x1="9" y1="16" x2="12" y2="16" stroke="#1A2D45" stroke-width="2"/>
+              </svg>
+              <span class="tab-lbl">Care Plan</span>
+            </div>
+            <!-- Medication -->
+            <div class="tab-item" id="tab-btn-medication" onclick="switchTab('medication')">
+              <svg class="tab-svg-off" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 3H5a2 2 0 00-2 2v2a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"/>
+                <path d="M3 9v9a2 2 0 002 2h5.5"/>
+                <circle cx="16.5" cy="16.5" r="4.5"/>
+                <line x1="16.5" y1="14.5" x2="16.5" y2="18.5"/><line x1="14.5" y1="16.5" x2="18.5" y2="16.5"/>
+              </svg>
+              <svg class="tab-svg-on" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 3H5a2 2 0 00-2 2v2a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z" fill="#1A2D45"/>
+                <path d="M3 9v9a2 2 0 002 2h5.5" stroke="#1A2D45" stroke-width="2" fill="none"/>
+                <circle cx="16.5" cy="16.5" r="4.5" fill="#1A2D45"/>
+                <line x1="16.5" y1="14.5" x2="16.5" y2="18.5" stroke="#fff" stroke-width="2"/>
+                <line x1="14.5" y1="16.5" x2="18.5" y2="16.5" stroke="#fff" stroke-width="2"/>
+              </svg>
+              <span class="tab-lbl">Medication</span>
+            </div>
+            <!-- Devices -->
+            <div class="tab-item" id="tab-btn-devices" onclick="switchTab('devices')">
+              <svg class="tab-svg-off" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="14" rx="2"/>
+                <path d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2"/>
+                <circle cx="12" cy="13" r="2.5"/>
+              </svg>
+              <svg class="tab-svg-on" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="14" rx="2" fill="#1A2D45"/>
+                <path d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2" stroke="#1A2D45" stroke-width="2"/>
+                <circle cx="12" cy="13" r="2.5" fill="#fff"/>
+              </svg>
+              <span class="tab-lbl">Devices</span>
+            </div>
+          </div>
+          </div>
+        </div><!-- /tab-layout -->
+      </div>
+
+      <!-- SCREEN: HERO DETAIL -->
+      <div class="screen" id="screen-hero-detail">
+        <div class="status-bar" style="color:#0f172a">
+          <span class="sb-time">9:41</span>
+          <span class="sb-icons">
+            <svg viewBox="0 0 24 24" width="16" height="11" fill="currentColor"><rect x="1" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="8.5" width="12" height="7" rx="1"/><path d="M21 10v4a2 2 0 000-4z"/></svg>
+          </span>
+        </div>
+        <div class="s-header">
+          <div class="back-btn" onclick="goBack()">‹</div>
+          <span class="s-header-title">Details</span>
+        </div>
+        <div class="scroll-body" id="hero-detail-body" style="padding-bottom:20px"><!-- filled by JS --></div>
+      </div>
+
+      <!-- SCREEN: CONNECT DEVICE -->
+      <div class="screen" id="screen-add-device">
+        <div class="status-bar" style="color:#0f172a">
+          <span class="sb-time">9:41</span>
+          <span class="sb-icons">
+            <svg viewBox="0 0 24 24" width="16" height="11" fill="currentColor"><rect x="1" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="8.5" width="12" height="7" rx="1"/><path d="M21 10v4a2 2 0 000-4z"/></svg>
+          </span>
+        </div>
+        <div class="s-header">
+          <div class="back-btn" onclick="goBack()">‹</div>
+          <span class="s-header-title">Connect Device</span>
+        </div>
+        <div class="scroll-body" id="avail-device-body" style="padding-bottom:24px"><!-- filled by JS --></div>
+      </div>
+
+      <!-- SCREEN: ACCOUNT -->
+      <div class="screen" id="screen-account">
+        <div class="status-bar" style="color:#0f172a">
+          <span class="sb-time">9:41</span>
+          <span class="sb-icons">
+            <svg viewBox="0 0 24 24" width="16" height="11" fill="currentColor"><rect x="1" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="8.5" width="12" height="7" rx="1"/><path d="M21 10v4a2 2 0 000-4z"/></svg>
+          </span>
+        </div>
+        <div class="s-header">
+          <div class="back-btn" onclick="goBack()">‹</div>
+          <span class="s-header-title">Account</span>
+        </div>
+        <div class="scroll-body" style="padding-bottom:24px">
+          <div class="acct-avatar">JD</div>
+          <div class="acct-name">John Doe</div>
+          <div class="acct-role">Patient · ID #HT-20458</div>
+          <div style="margin:0 12px 10px;height:1px;background:#F0F4F8"></div>
+          <div class="acct-item">
+            <span class="acct-item-ico">👤</span>
+            <span class="acct-item-lbl">My Profile</span>
+            <span class="acct-item-arrow">›</span>
+          </div>
+          <div class="acct-item">
+            <span class="acct-item-ico">🔔</span>
+            <span class="acct-item-lbl">Notifications</span>
+            <span class="acct-item-arrow">›</span>
+          </div>
+          <div class="acct-item">
+            <span class="acct-item-ico">🌙</span>
+            <span class="acct-item-lbl">Dark Mode</span>
+            <span class="acct-item-arrow">›</span>
+          </div>
+          <div class="acct-item">
+            <span class="acct-item-ico">🔒</span>
+            <span class="acct-item-lbl">Privacy & Security</span>
+            <span class="acct-item-arrow">›</span>
+          </div>
+          <div class="acct-item">
+            <span class="acct-item-ico">❓</span>
+            <span class="acct-item-lbl">Help & Support</span>
+            <span class="acct-item-arrow">›</span>
+          </div>
+          <div style="margin:16px 12px 0;height:1px;background:#F0F4F8"></div>
+          <div class="acct-item danger" onclick="onLogout()">
+            <span class="acct-item-ico">🚪</span>
+            <span class="acct-item-lbl">Logout</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN: MEDICATION DETAIL -->
+      <div class="screen" id="screen-med-detail">
+        <div class="status-bar" style="color:#0f172a">
+          <span class="sb-time">9:41</span>
+          <span class="sb-icons">
+            <svg viewBox="0 0 24 24" width="16" height="11" fill="currentColor"><rect x="1" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="8.5" width="12" height="7" rx="1"/><path d="M21 10v4a2 2 0 000-4z"/></svg>
+          </span>
+        </div>
+        <div class="s-header">
+          <div class="back-btn" onclick="goBack()">‹</div>
+          <span class="s-header-title">Medication Details</span>
+        </div>
+        <div class="scroll-body" id="med-detail-body" style="padding-bottom:16px"><!-- filled by JS --></div>
+        <div class="detail-footer">
+          <button class="detail-del-btn" onclick="showDeleteModal()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+            Delete
+          </button>
+          <button class="detail-edit-btn" onclick="onEditMed()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+        </div>
+      </div>
+
+      <!-- SCREEN: ADD / EDIT MEDICATION -->
+      <div class="screen" id="screen-add-med">
+        <div class="status-bar" style="color:#0f172a">
+          <span class="sb-time">9:41</span>
+          <span class="sb-icons">
+            <svg viewBox="0 0 24 24" width="16" height="11" fill="currentColor"><rect x="1" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="8.5" width="12" height="7" rx="1"/><path d="M21 10v4a2 2 0 000-4z"/></svg>
+          </span>
+        </div>
+        <div class="s-header">
+          <div class="back-btn" onclick="goBack()">‹</div>
+          <span class="s-header-title" id="add-med-title">Add Medication</span>
+        </div>
+        <div class="scroll-body" style="padding-bottom:16px">
+
+          <div class="form-card">
+            <div class="form-card-hdr">Drug Details</div>
+            <div class="form-field">
+              <div class="form-lbl">Drug Name *</div>
+              <div class="drug-search-wrap">
+                <input class="form-input" id="f-drug" placeholder="Search medicine name…"
+                  autocomplete="off" autocapitalize="words"
+                  oninput="onDrugSearch(this.value)" onblur="hideDrugDropdown()"/>
+                <div class="drug-dropdown" id="drug-dropdown"></div>
+              </div>
+              <div class="form-err" id="f-drug-err"></div>
+            </div>
+            <div class="field-row">
+              <div class="form-field">
+                <div class="form-lbl">Dosage (mg) *</div>
+                <div class="date-trigger" id="dosage-trigger" onclick="openDosageSheet()">
+                  <span id="dosage-trigger-txt" class="date-trigger-ph">Select dosage</span>
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#94A3B8" stroke-width="2.2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="form-err" id="f-dosage-err"></div>
+              </div>
+              <div class="form-field">
+                <div class="form-lbl">Pills / Dose</div>
+                <input class="form-input" id="f-pills" placeholder="1" inputmode="numeric"/>
+              </div>
+            </div>
+            <div class="form-field">
+              <div class="form-lbl">Medication Form</div>
+              <div class="chips-row" id="form-chips">
+                <div class="chip" onclick="selectChip('form','Tablet',this)">Tablet</div>
+                <div class="chip" onclick="selectChip('form','Capsule',this)">Capsule</div>
+                <div class="chip" onclick="selectChip('form','Syrup',this)">Syrup</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <div class="form-card-hdr">Schedule</div>
+            <div class="form-field">
+              <div class="form-lbl">Frequency</div>
+              <div class="chips-row" id="freq-chips">
+                <div class="chip" onclick="selectChip('freq','Once Daily',this)">Once Daily</div>
+                <div class="chip" onclick="selectChip('freq','Twice Daily',this)">Twice Daily</div>
+                <div class="chip" onclick="selectChip('freq','Three Times Daily',this)">3× Daily</div>
+                <div class="chip" onclick="selectChip('freq','Weekly',this)">Weekly</div>
+              </div>
+            </div>
+            <div class="form-field">
+              <div class="form-lbl">Meal Time</div>
+              <div class="chips-row" id="meal-chips">
+                <div class="chip" onclick="selectChip('meal','Before Meal',this)">Before Meal</div>
+                <div class="chip" onclick="selectChip('meal','After Meal',this)">After Meal</div>
+                <div class="chip" onclick="selectChip('meal','With Meal',this)">With Meal</div>
+                <div class="chip" onclick="selectChip('meal','Anytime',this)">Anytime</div>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="form-field">
+                <div class="form-lbl">Start Date *</div>
+                <div class="date-trigger" id="dt-start" onclick="openCal('start')">
+                  <span id="dt-start-txt" class="date-trigger-ph">Select date</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <div class="form-err" id="f-start-err"></div>
+              </div>
+              <div class="form-field">
+                <div class="form-lbl">End Date *</div>
+                <div class="date-trigger" id="dt-end" onclick="openCal('end')">
+                  <span id="dt-end-txt" class="date-trigger-ph">Select date</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <div class="form-err" id="f-end-err"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <div class="form-card-hdr">Notes</div>
+            <div class="form-field">
+              <div class="form-lbl">Clinical Instructions (optional)</div>
+              <textarea class="form-input form-input-ml" id="f-notes"
+                placeholder="Optional notes for the patient"></textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sticky footer -->
+        <div class="form-sticky-footer">
+          <button class="submit-btn" id="submit-med-btn" onclick="onSubmitMed()" disabled style="opacity:.4;cursor:not-allowed">Add Medication</button>
+        </div>
+
+        <!-- Calendar bottom sheet -->
+        <div class="cal-backdrop" id="cal-backdrop" onclick="onCalBackdropClick(event)">
+          <div class="cal-sheet" id="cal-sheet">
+            <div class="cal-handle"></div>
+            <div class="cal-hdr">
+              <div>
+                <div class="cal-hdr-lbl" id="cal-month-lbl"></div>
+                <div style="font-size:11px;color:#94A3B8;margin-top:2px" id="cal-target-lbl"></div>
+              </div>
+              <div class="cal-nav">
+                <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+                <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+              </div>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+        </div>
+
+        <!-- Dosage bottom sheet -->
+        <div class="cal-backdrop" id="dosage-backdrop" onclick="onDosageBackdropClick(event)">
+          <div class="cal-sheet">
+            <div class="cal-handle"></div>
+            <div class="cal-hdr" style="padding-bottom:14px">
+              <div>
+                <div class="cal-hdr-lbl">Select Dosage</div>
+                <div id="dosage-sheet-sub" style="font-size:11px;color:#94A3B8;margin-top:2px"></div>
+              </div>
+              <button class="cal-nav-btn" onclick="closeDosageSheet()" style="font-size:18px;color:#475569">✕</button>
+            </div>
+            <div id="dosage-sheet-list" style="padding:0 14px 10px;display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Delete modal -->
+      <div class="modal-backdrop" id="delete-modal">
+        <div class="modal-sheet">
+          <div class="modal-title">Delete Medication</div>
+          <div class="modal-msg">Are you sure you want to delete this medication? This action cannot be undone.</div>
+          <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="hideDeleteModal()">Cancel</button>
+            <button class="modal-btn modal-confirm" onclick="onConfirmDelete()">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast -->
+      <div class="toast" id="toast">
+        <span class="toast-ico" id="toast-ico">✓</span>
+        <span id="toast-msg"></span>
+      </div>
+
+    </div><!-- /iphone-screen -->
+  </div><!-- /iphone -->
+
+</div><!-- /page-shell -->
+
+<script>
+/* ════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════ */
+const state = {
+  phone: '',
+  screenStack: ['screen-login'],
+  activeTab: 'dashboard',
+  medActiveTab: 'current',
+  currentMedId: null,
+  editingMedId: null,
+  formSelections: { form:'Tablet', freq:'Once Daily', meal:'After Meal' },
+  deviceActiveTab: 'connected',
+  devices: [
+    { id:'dv1', name:'Blood Pressure Cuff', type:'bluetooth', status:'Connected',    lastSync:'5 min ago',  lastReading:'118/76 mmHg' },
+    { id:'dv2', name:'Weight Scale',        type:'bluetooth', status:'Connected',    lastSync:'2 hrs ago',  lastReading:'72.4 kg' },
+    { id:'dv3', name:'Pulse Oximeter',      type:'bluetooth', status:'Disconnected', lastSync:'Yesterday',  lastReading:'SpO₂ 98%' },
+  ],
+  medications: [
+    {
+      id:'m1', drugName:'Metformin', form:'Tablet', dosage:'500', pillsPerDose:1,
+      status:'Active', frequency:'Twice Daily', mealTime:'After Meal',
+      timeOfIntake:['08:00 AM','08:00 PM'],
+      startDate:'01/05/2025', endDate:'01/08/2025',
+      clinicalInstruction:'Take with a full glass of water. Monitor blood glucose levels regularly and report any unusual symptoms to your care provider.'
+    },
+    {
+      id:'m2', drugName:'Lisinopril', form:'Tablet', dosage:'10', pillsPerDose:1,
+      status:'Active', frequency:'Once Daily', mealTime:'Before Meal',
+      timeOfIntake:['07:00 AM'],
+      startDate:'15/03/2025', endDate:'15/09/2025',
+      clinicalInstruction:'Avoid potassium supplements unless directed by your doctor. Monitor blood pressure weekly.'
+    },
+    {
+      id:'m3', drugName:'Amoxicillin', form:'Capsule', dosage:'250', pillsPerDose:2,
+      status:'Active', frequency:'Three Times Daily', mealTime:'After Meal',
+      timeOfIntake:['08:00 AM','02:00 PM','08:00 PM'],
+      startDate:'18/05/2025', endDate:'25/05/2025',
+      clinicalInstruction:'Complete the full course even if you feel better.'
+    },
+    {
+      id:'m4', drugName:'Atorvastatin', form:'Tablet', dosage:'20', pillsPerDose:1,
+      status:'Completed', frequency:'Once Daily', mealTime:'With Meal',
+      timeOfIntake:['09:00 PM'],
+      startDate:'01/01/2025', endDate:'01/04/2025',
+      clinicalInstruction:''
+    },
+    {
+      id:'m5', drugName:'Cetirizine', form:'Tablet', dosage:'10', pillsPerDose:1,
+      status:'Completed', frequency:'Once Daily', mealTime:'Before Meal',
+      timeOfIntake:['10:00 PM'],
+      startDate:'10/02/2025', endDate:'10/03/2025',
+      clinicalInstruction:'May cause drowsiness. Avoid driving or operating heavy machinery.'
+    },
+  ]
+};
+
+const heroes = [
+  {emoji:'🦸',name:'Spider-Man',publisher:'Marvel Comics',firstAppearance:'August 1962',team:'Avengers',bio:'Peter Parker was a high school student bitten by a radioactive spider, granting him superhuman strength, agility, and the ability to cling to walls. He fights crime in New York City as Spider-Man.'},
+  {emoji:'🦇',name:'Batman',publisher:'DC Comics',firstAppearance:'May 1939',team:'Justice League',bio:'Bruce Wayne witnessed his parents\' murder as a child and vowed to wage a war on crime. With no superpowers but exceptional intellect and martial arts mastery, he protects Gotham City.'},
+  {emoji:'⚡',name:'The Flash',publisher:'DC Comics',firstAppearance:'October 1956',team:'Justice League',bio:'Barry Allen was struck by lightning while working late in his lab, granting him the power to move at superhuman speeds. He uses these powers to protect Central City.'},
+  {emoji:'🛡️',name:'Captain America',publisher:'Marvel Comics',firstAppearance:'March 1941',team:'Avengers',bio:'Steve Rogers was a frail young man enhanced by an experimental super-soldier serum during World War II. He became a living legend and symbol of freedom and courage.'},
+  {emoji:'🔱',name:'Thor',publisher:'Marvel Comics',firstAppearance:'August 1962',team:'Avengers',bio:'The Asgardian God of Thunder and a founding Avenger. Thor wields the enchanted hammer Mjolnir to channel his power over storms and thunder.'},
+  {emoji:'🕷️',name:'Black Widow',publisher:'Marvel Comics',firstAppearance:'April 1964',team:'Avengers',bio:'Natasha Romanoff is one of the world\'s greatest spies and a world-class martial artist. Trained in the Red Room, she uses her skills in espionage and combat for S.H.I.E.L.D.'},
+  {emoji:'🤘',name:'Iron Man',publisher:'Marvel Comics',firstAppearance:'March 1963',team:'Avengers',bio:'Genius billionaire Tony Stark built an armored suit to escape captivity and went on to become Iron Man, a founding member of the Avengers and Earth\'s most prominent hero.'},
+];
+
+/* ════════════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════════════ */
+function pushScreen(id) {
+  const current = state.screenStack[state.screenStack.length - 1];
+  const currentEl = document.getElementById(current);
+  const nextEl = document.getElementById(id);
+  currentEl.classList.add('behind');
+  currentEl.classList.remove('active');
+  nextEl.classList.add('active');
+  state.screenStack.push(id);
+}
+
+function goBack() {
+  if (state.screenStack.length <= 1) return;
+  const current = state.screenStack.pop();
+  const prev = state.screenStack[state.screenStack.length - 1];
+  const currentEl = document.getElementById(current);
+  const prevEl = document.getElementById(prev);
+  currentEl.classList.remove('active');
+  prevEl.classList.remove('behind');
+  prevEl.classList.add('active');
+}
+
+function goTo(id) {
+  // Reset entire stack to root + new screen
+  // Used for login→home
+  const all = document.querySelectorAll('.screen');
+  all.forEach(s => { s.classList.remove('active','behind'); });
+  state.screenStack = [id];
+  document.getElementById(id).classList.add('active');
+}
+
+/* ════════════════════════════════════════════════════
+   TAB NAVIGATION
+════════════════════════════════════════════════════ */
+function switchTab(name) {
+  // deactivate all
+  ['dashboard','careplan','medication','devices'].forEach(t => {
+    document.getElementById('tab-'+t)?.classList.remove('active');
+    document.getElementById('tab-btn-'+t)?.classList.remove('active');
+    document.getElementById('tab-btn-'+t)?.querySelector('.tab-lbl')?.classList.remove('active');
+  });
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('tab-btn-'+name).classList.add('active');
+  document.getElementById('tab-btn-'+name).querySelector('.tab-lbl').classList.add('active');
+  state.activeTab = name;
+  if (name === 'medication') renderMedList();
+  if (name === 'devices') renderDeviceList();
+}
+
+/* ════════════════════════════════════════════════════
+   LOGIN — PHONE STEP
+════════════════════════════════════════════════════ */
+const phoneInput = document.getElementById('phone-input');
+const phoneRow   = document.getElementById('phone-row');
+const phoneErr   = document.getElementById('phone-err');
+
+phoneInput.addEventListener('input', e => {
+  let v = e.target.value.replace(/\D/g,'');
+  let fmt = '';
+  if (v.length > 0) fmt = '(' + v.slice(0,3);
+  if (v.length >= 4) fmt += ') ' + v.slice(3,6);
+  if (v.length >= 7) fmt += '-' + v.slice(6,10);
+  e.target.value = fmt;
+  state.phone = v;
+  phoneErr.textContent = '';
+  phoneRow.classList.remove('error');
+});
+
+function onSendOtp() {
+  const raw = state.phone.replace(/\D/g,'');
+  if (raw.length !== 10) {
+    phoneErr.textContent = 'Please enter a valid 10-digit mobile number';
+    phoneRow.classList.add('error');
+    return;
+  }
+  const btn = document.getElementById('send-otp-btn');
+  btn.classList.add('loading');
+  btn.textContent = '';
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    btn.textContent = 'Send OTP';
+    showOtpStep();
+  }, 1200);
+}
+
+function showOtpStep() {
+  document.getElementById('login-phone-step').style.display = 'none';
+  document.getElementById('login-otp-step').style.display = 'flex';
+  const formatted = phoneInput.value;
+  document.getElementById('otp-sub').textContent = `+1 ${formatted}`;
+  // Auto-start timer
+  startResendTimer();
+  // Focus first box
+  const boxes = document.querySelectorAll('.otp-box');
+  boxes[0].focus();
+  // Simulate auto-fill after 2.5s (demo purposes)
+  setTimeout(() => autoFillOtp('372819'), 2500);
+}
+
+function onOtpBack() {
+  document.getElementById('login-otp-step').style.display = 'none';
+  document.getElementById('login-phone-step').style.display = 'flex';
+  clearOtp();
+  stopResendTimer();
+}
+
+/* ─── OTP boxes ────────────────────────────────────────────────────────────── */
+let resendInterval = null;
+let resendCount = 30;
+
+const otpBoxes = document.querySelectorAll('.otp-box');
+otpBoxes.forEach((box, idx) => {
+  box.addEventListener('input', e => {
+    const val = e.target.value.replace(/\D/g,'');
+    e.target.value = val.slice(-1);
+    if (val) {
+      box.classList.add('filled');
+      if (idx < 5) otpBoxes[idx+1].focus();
+    } else {
+      box.classList.remove('filled');
+    }
+    document.getElementById('otp-err').textContent = '';
+    otpBoxes.forEach(b => b.classList.remove('error'));
+  });
+  box.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !box.value && idx > 0) {
+      otpBoxes[idx-1].focus();
+      otpBoxes[idx-1].value = '';
+      otpBoxes[idx-1].classList.remove('filled');
+    }
+  });
+  box.addEventListener('paste', e => {
+    e.preventDefault();
+    const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+    [...paste].forEach((ch, i) => {
+      if (otpBoxes[i]) { otpBoxes[i].value = ch; otpBoxes[i].classList.add('filled'); }
+    });
+    if (otpBoxes[paste.length]) otpBoxes[paste.length].focus();
+  });
+});
+
+function autoFillOtp(code) {
+  [...code].forEach((ch, i) => {
+    if (otpBoxes[i]) { otpBoxes[i].value = ch; otpBoxes[i].classList.add('filled'); }
+  });
+}
+
+function clearOtp() {
+  otpBoxes.forEach(b => { b.value=''; b.classList.remove('filled','error'); });
+  document.getElementById('otp-err').textContent = '';
+}
+
+function startResendTimer() {
+  resendCount = 30;
+  document.getElementById('resend-timer').style.display = 'inline';
+  document.getElementById('resend-btn').style.display = 'none';
+  updateTimerDisplay();
+  stopResendTimer();
+  resendInterval = setInterval(() => {
+    resendCount--;
+    updateTimerDisplay();
+    if (resendCount <= 0) {
+      stopResendTimer();
+      document.getElementById('resend-timer').style.display = 'none';
+      document.getElementById('resend-btn').style.display = 'flex';
+    }
+  }, 1000);
+}
+
+function stopResendTimer() {
+  if (resendInterval) { clearInterval(resendInterval); resendInterval = null; }
+}
+
+function updateTimerDisplay() {
+  document.getElementById('resend-timer').textContent = `Resend code in ${resendCount}s`;
+}
+
+function onResend() {
+  clearOtp();
+  startResendTimer();
+  showToast('New OTP sent to your number', 'success');
+  setTimeout(() => autoFillOtp('654321'), 2000);
+}
+
+function onVerifyOtp() {
+  const code = [...otpBoxes].map(b => b.value).join('');
+  if (code.length !== 6) {
+    document.getElementById('otp-err').textContent = 'Please enter the 6-digit OTP';
+    otpBoxes.forEach(b => { if (!b.value) b.classList.add('error'); });
+    return;
+  }
+  const btn = document.getElementById('verify-btn');
+  btn.classList.add('loading');
+  btn.textContent = '';
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    btn.textContent = 'Verify & Sign In';
+    stopResendTimer();
+    goToHome();
+  }, 1400);
+}
+
+function goToHome() {
+  goTo('screen-home');
+  renderDashboard();
+  renderMedList();
+}
+
+/* ════════════════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════════════════ */
+function renderDashboard() {
+  const container = document.getElementById('dashboard-list');
+  container.innerHTML = heroes.map((h, i) => `
+    <div class="hero-card" onclick="goHeroDetail(${i})">
+      <div class="hero-thumb" style="background:${heroGrad(i)}">${h.emoji}</div>
+      <div class="hero-info">
+        <div class="hero-name">${h.name}</div>
+        <div class="hero-pub">${h.publisher}</div>
+        <div class="hero-appear">First appeared · ${h.firstAppearance}</div>
+      </div>
+      <div class="hero-arrow">›</div>
+    </div>
+    <div style="height:1px;background:#F0F4F8;margin:0 16px"></div>
+  `).join('');
+}
+
+const gradients = [
+  'linear-gradient(135deg,#1e3a5f,#1A2D45)',
+  'linear-gradient(135deg,#1a1a2e,#4a0e8f)',
+  'linear-gradient(135deg,#0d4f2f,#10B981)',
+  'linear-gradient(135deg,#7f1d1d,#dc2626)',
+  'linear-gradient(135deg,#1e3a5f,#6366f1)',
+  'linear-gradient(135deg,#14532d,#16a34a)',
+  'linear-gradient(135deg,#7c2d12,#ea580c)',
+];
+const heroGrad = i => gradients[i % gradients.length];
+
+function goHeroDetail(idx) {
+  const h = heroes[idx];
+  const body = document.getElementById('hero-detail-body');
+  body.innerHTML = `
+    <div class="detail-hero-banner" style="background:${heroGrad(idx)}">
+      <div class="detail-hero-avatar">${h.emoji}</div>
+      <div>
+        <div class="detail-hero-name">${h.name}</div>
+        <div class="detail-hero-pub">${h.publisher}</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-hdr">Superhero Info</div>
+      <div class="info-row"><span class="info-lbl">Full Name</span><span class="info-val">${h.name}</span></div>
+      <div class="info-row"><span class="info-lbl">Publisher</span><span class="info-val">${h.publisher}</span></div>
+      <div class="info-row"><span class="info-lbl">Team</span><span class="info-val">${h.team}</span></div>
+      <div class="info-row"><span class="info-lbl">First Appearance</span><span class="info-val">${h.firstAppearance}</span></div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-hdr">Biography</div>
+      <div class="info-row"><span class="info-val" style="color:#475569;font-weight:400;line-height:1.65">${h.bio}</span></div>
+    </div>
+  `;
+  pushScreen('screen-hero-detail');
+}
+
+/* ════════════════════════════════════════════════════
+   ACCOUNT
+════════════════════════════════════════════════════ */
+function goAccount() {
+  pushScreen('screen-account');
+}
+function onLogout() {
+  showToast('Logged out successfully', 'success');
+  setTimeout(() => {
+    state.screenStack = [];
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active','behind'));
+    document.getElementById('login-phone-step').style.display = 'flex';
+    document.getElementById('login-otp-step').style.display = 'none';
+    document.getElementById('phone-input').value = '';
+    state.phone = '';
+    clearOtp();
+    document.getElementById('screen-login').classList.add('active');
+    state.screenStack = ['screen-login'];
+  }, 1200);
+}
+
+/* ════════════════════════════════════════════════════
+   MEDICATION LIST
+════════════════════════════════════════════════════ */
+function switchMedTab(tab) {
+  state.medActiveTab = tab;
+  document.getElementById('seg-current').classList.toggle('active', tab === 'current');
+  document.getElementById('seg-past').classList.toggle('active', tab === 'past');
+  renderMedList();
+}
+
+function renderMedList() {
+  const body = document.getElementById('med-list-body');
+  const isPast = state.medActiveTab === 'past';
+  const list = state.medications.filter(m =>
+    isPast ? m.status !== 'Active' : m.status === 'Active'
+  );
+  if (list.length === 0) {
+    body.innerHTML = `
+      <div class="empty-wrap">
+        <div class="empty-ico">💊</div>
+        <div class="empty-ttl">${isPast ? 'No past medications' : 'No current medications'}</div>
+        <div class="empty-sub">${isPast ? 'Your completed medications will appear here' : 'Your active medications will appear here'}</div>
+      </div>`;
+    return;
+  }
+  body.innerHTML = list.map(m => {
+    const bg = m.status==='Active'?'med-bg-active':m.status==='Completed'?'med-bg-completed':'med-bg-inactive';
+    const iconBg = m.status==='Active'?'med-icon-active':m.status==='Completed'?'med-icon-completed':'med-icon-inactive';
+    const checkBg = m.status==='Active'?'med-check-active':m.status==='Completed'?'med-check-completed':'med-check-inactive';
+    const checkStroke = m.status==='Active'?'#2A9D8F':m.status==='Completed'?'#3B82F6':'#94A3B8';
+    const nextTime = m.timeOfIntake && m.timeOfIntake.length ? m.timeOfIntake[0] : '—';
+    const freqShort = m.frequency.replace('Once','1×').replace('Twice','2×').replace('Three Times','3×').replace(' Daily','').trim()+'/day';
+    const formIcon = m.form==='Capsule'
+      ? `<svg viewBox="0 0 32 32" width="26" height="26"><ellipse cx="16" cy="16" rx="8" ry="13" rx="8" fill="none" stroke="#4A90D9" stroke-width="2"/><line x1="8" y1="16" x2="24" y2="16" stroke="#4A90D9" stroke-width="2"/><ellipse cx="16" cy="9.5" rx="8" ry="6.5" fill="#4A90D9" opacity=".2"/></svg>`
+      : m.form==='Syrup'
+      ? `<svg viewBox="0 0 32 32" width="24" height="24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"><rect x="10" y="12" width="12" height="14" rx="3"/><path d="M13 12V9a3 3 0 016 0v3"/><line x1="16" y1="16" x2="16" y2="22"/><line x1="13" y1="19" x2="19" y2="19"/></svg>`
+      : `<svg viewBox="0 0 32 32" width="26" height="26" fill="none"><circle cx="12" cy="16" r="7" fill="#4A90D9" opacity=".85"/><circle cx="20" cy="16" r="7" fill="#1A2D45" opacity=".75"/></svg>`;
+    return `
+    <div class="med-card ${bg}" onclick="goMedDetail('${m.id}')">
+      <div class="med-card-top">
+        <div class="med-card-icon ${iconBg}">${formIcon}</div>
+        <div class="med-card-info">
+          <div class="med-card-drug">${m.drugName}</div>
+          <div class="med-card-sub">${m.form} · ${m.mealTime}</div>
+        </div>
+        <div class="med-card-check ${checkBg}">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="${checkStroke}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      </div>
+      <div class="med-card-stats">
+        <div class="med-stat-col">
+          <span class="med-stat-lbl">Dose</span>
+          <span class="med-stat-val">${m.dosage} mg</span>
+        </div>
+        <div class="med-stat-col">
+          <span class="med-stat-lbl">Next Dose</span>
+          <span class="med-stat-val">${nextTime}</span>
+        </div>
+        <div class="med-stat-col">
+          <span class="med-stat-lbl">Frequency</span>
+          <span class="med-stat-val">${freqShort}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function accentClass(status) {
+  return status==='Active'?'accent-active':status==='Completed'?'accent-completed':'accent-inactive';
+}
+function formBadgeClass(f) {
+  return f==='Tablet'?'badge-tablet':f==='Capsule'?'badge-capsule':'badge-syrup';
+}
+function statusBadgeClass(s) {
+  return s==='Active'?'badge-active':s==='Completed'?'badge-completed':'badge-inactive';
+}
+function bannerClass(s) {
+  return s==='Active'?'banner-active':s==='Completed'?'banner-completed':'banner-inactive';
+}
+function pillClass(s) {
+  return s==='Active'?'pill-active':s==='Completed'?'pill-completed':'pill-inactive';
+}
+
+/* ════════════════════════════════════════════════════
+   MEDICATION DETAIL
+════════════════════════════════════════════════════ */
+function goMedDetail(id) {
+  state.currentMedId = id;
+  renderMedDetail(id);
+  pushScreen('screen-med-detail');
+}
+
+function renderMedDetail(id) {
+  const m = state.medications.find(x => x.id === id);
+  if (!m) return;
+  const body = document.getElementById('med-detail-body');
+
+  const statusCls = m.status==='Active'?'mdd-status-active':m.status==='Completed'?'mdd-status-completed':'mdd-status-inactive';
+  const freqNum = m.frequency==='Once Daily'?'1×':m.frequency==='Twice Daily'?'2×':m.frequency==='Three Times Daily'?'3×':'1×';
+  const pillsLabel = `${m.pillsPerDose} ${m.pillsPerDose===1?'pill':'pills'}`;
+
+  const formIcon = m.form==='Capsule'
+    ? `<svg viewBox="0 0 32 32" width="26" height="26" fill="none"><ellipse cx="16" cy="16" rx="7" ry="11" stroke="rgba(255,255,255,.7)" stroke-width="2"/><line x1="9" y1="16" x2="23" y2="16" stroke="rgba(255,255,255,.7)" stroke-width="2"/><ellipse cx="16" cy="10" rx="7" ry="6" fill="rgba(255,255,255,.15)"/></svg>`
+    : m.form==='Syrup'
+    ? `<svg viewBox="0 0 32 32" width="24" height="24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" stroke-linecap="round"><rect x="10" y="13" width="12" height="13" rx="3"/><path d="M13 13v-3a3 3 0 016 0v3"/><line x1="16" y1="17" x2="16" y2="22"/><line x1="13.5" y1="19.5" x2="18.5" y2="19.5"/></svg>`
+    : `<svg viewBox="0 0 32 32" width="26" height="26" fill="none"><circle cx="12" cy="16" r="7" fill="rgba(255,255,255,.55)"/><circle cx="20" cy="16" r="7" fill="rgba(255,255,255,.25)"/></svg>`;
+
+  const timeChips = m.timeOfIntake.map(t => `
+    <span class="mdd-time-chip">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#1A2D45" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 12"/></svg>
+      ${t}
+    </span>`).join('');
+
+  body.innerHTML = `
+    <!-- Hero -->
+    <div class="mdd-hero">
+      <div class="mdd-hero-top">
+        <div class="mdd-hero-icon">${formIcon}</div>
+        <div class="mdd-hero-info">
+          <div class="mdd-drug-name">${m.drugName}</div>
+          <div class="mdd-drug-form">${m.form}</div>
+        </div>
+        <div class="mdd-status-badge ${statusCls}">${m.status}</div>
+      </div>
+      <div class="mdd-stats">
+        <div class="mdd-stat">
+          <span class="mdd-stat-lbl">Dosage</span>
+          <span class="mdd-stat-val">${m.dosage} mg</span>
+        </div>
+        <div class="mdd-stat">
+          <span class="mdd-stat-lbl">Per Dose</span>
+          <span class="mdd-stat-val">${pillsLabel}</span>
+        </div>
+        <div class="mdd-stat">
+          <span class="mdd-stat-lbl">Frequency</span>
+          <span class="mdd-stat-val">${freqNum}/day</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prescription info -->
+    <div class="mdd-card">
+      <div class="mdd-card-hdr">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg>
+        Prescription Info
+      </div>
+      <div class="mdd-row">
+        <span class="mdd-row-lbl">Frequency</span>
+        <span class="mdd-row-val">${m.frequency}</span>
+      </div>
+      <div class="mdd-row">
+        <span class="mdd-row-lbl">Meal Time</span>
+        <span class="mdd-row-val">${m.mealTime}</span>
+      </div>
+    </div>
+
+    <!-- Schedule -->
+    <div class="mdd-card">
+      <div class="mdd-card-hdr">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Schedule
+      </div>
+      <div class="mdd-date-range">
+        <div class="mdd-date-pill">
+          <span class="mdd-date-pill-lbl">Start</span>
+          <span class="mdd-date-pill-val">${m.startDate}</span>
+        </div>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        <div class="mdd-date-pill">
+          <span class="mdd-date-pill-lbl">End</span>
+          <span class="mdd-date-pill-val">${m.endDate}</span>
+        </div>
+      </div>
+      <div class="mdd-row" style="flex-direction:column;align-items:flex-start;gap:9px">
+        <span class="mdd-row-lbl">Intake Times</span>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">${timeChips}</div>
+      </div>
+    </div>
+
+    ${m.clinicalInstruction ? `
+    <div class="mdd-card" style="margin-bottom:4px">
+      <div class="mdd-card-hdr">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Clinical Instructions
+      </div>
+      <div class="mdd-notes">${m.clinicalInstruction}</div>
+    </div>` : ''}
+  `;
+}
+
+function onEditMed() {
+  goAddMedication(state.currentMedId);
+}
+
+/* ════════════════════════════════════════════════════
+   ADD / EDIT MEDICATION
+════════════════════════════════════════════════════ */
+function goAddMedication(editId) {
+  state.editingMedId = editId;
+  const isEdit = !!editId;
+  document.getElementById('add-med-title').textContent = isEdit ? 'Edit Medication' : 'Add Medication';
+  document.getElementById('submit-med-btn').textContent = isEdit ? 'Save Changes' : 'Add Medication';
+
+  // Reset form fields
+  ['f-drug','f-dosage','f-pills','f-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['f-drug-err','f-dosage-err','f-start-err','f-end-err'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = '';
+  });
+
+  // Reset date pickers
+  calState.startDate = null; calState.endDate = null;
+  const resetDt = t => {
+    const txt = document.getElementById('dt-'+t+'-txt');
+    if (txt) { txt.textContent = 'Select date'; txt.className = 'date-trigger-ph'; }
+    const trig = document.getElementById('dt-'+t);
+    if (trig) trig.classList.remove('err');
+  };
+  resetDt('start'); resetDt('end');
+
+  // Reset dosage
+  resetDosage();
+  formState.dosage = null;
+
+  // Reset chips — all unselected
+  state.formSelections = { form: null, freq: null, meal: null };
+  resetChipGroup('form-chips', null);
+  resetChipGroup('freq-chips', null);
+  resetChipGroup('meal-chips', null);
+
+  // Pre-fill if editing
+  if (isEdit) {
+    const m = state.medications.find(x => x.id === editId);
+    if (m) {
+      document.getElementById('f-drug').value = m.drugName;
+      formState.dosage = parseFloat(m.dosage);
+      const dtxt = document.getElementById('dosage-trigger-txt');
+      if (dtxt) { dtxt.textContent = m.dosage + ' mg'; dtxt.className = 'date-trigger-txt'; }
+      document.getElementById('f-pills').value = m.pillsPerDose;
+      document.getElementById('f-notes').value = m.clinicalInstruction || '';
+      // Parse stored DD/MM/YYYY into Date objects
+      const parseDate = s => { if (!s) return null; const [d,mo,y]=s.split('/'); return new Date(+y,+mo-1,+d); };
+      calState.startDate = parseDate(m.startDate);
+      calState.endDate   = parseDate(m.endDate);
+      if (calState.startDate) setDateDisplay('start', calState.startDate);
+      if (calState.endDate)   setDateDisplay('end',   calState.endDate);
+      state.formSelections = { form: m.form, freq: m.frequency, meal: m.mealTime };
+      resetChipGroup('form-chips', m.form);
+      resetChipGroup('freq-chips', m.frequency);
+      resetChipGroup('meal-chips', m.mealTime);
+    }
+  }
+
+  pushScreen('screen-add-med');
+  setTimeout(checkFormComplete, 50);
+}
+
+function resetChipGroup(groupId, activeVal) {
+  const group = document.getElementById(groupId);
+  if (!group) return;
+  group.querySelectorAll('.chip').forEach(c => {
+    const match = activeVal !== null && (
+      c.textContent.trim() === activeVal ||
+      (activeVal === 'Three Times Daily' && c.textContent.trim() === '3× Daily')
+    );
+    c.classList.toggle('active', match);
+  });
+}
+
+function selectChip(type, val, el) {
+  const groupMap = { form:'form-chips', freq:'freq-chips', meal:'meal-chips' };
+  const group = document.getElementById(groupMap[type]);
+  group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  state.formSelections[type] = val;
+  checkFormComplete();
+}
+
+/* ════════════════════════════════════════════════════
+   DEVICES MODULE
+════════════════════════════════════════════════════ */
+const ALL_DEVICES = [
+  { name:'Blood Pressure Cuff',  type:'bluetooth', desc:'Systolic/diastolic BP, heart rate, timestamp'        },
+  { name:'Dexcom CGM',           type:'api',       desc:'Continuous glucose, time in range, trend alerts'     },
+  { name:'FreeStyle Libre CGM',  type:'api',       desc:'Glucose readings, AGP reports, sensor data'         },
+  { name:'Weight Scale',         type:'bluetooth', desc:'Body weight, BMI calculation, timestamp'             },
+  { name:'Pulse Oximeter',       type:'bluetooth', desc:'SpO2, oxygen saturation, heart rate'                },
+];
+
+function deviceIconSvg(name, connected) {
+  const c = connected ? '#2A9D8F' : '#94A3B8';
+  if (name.includes('Blood Pressure'))
+    return `<svg viewBox="0 0 32 32" width="28" height="28" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M16 28s-9-5.5-9-13a9 9 0 0118 0c0 7.5-9 13-9 13z"/><polyline points="12 17 14.5 19.5 20 14"/></svg>`;
+  if (name.includes('Dexcom') || name.includes('FreeStyle') || name.includes('CGM'))
+    return `<svg viewBox="0 0 32 32" width="28" height="28" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><circle cx="16" cy="16" r="5"/><path d="M16 4v4M16 24v4M4 16h4M24 16h4"/><path d="M7.8 7.8l2.8 2.8M21.4 21.4l2.8 2.8M21.4 10.6l2.8-2.8M7.8 24.2l2.8-2.8"/></svg>`;
+  if (name.includes('Weight'))
+    return `<svg viewBox="0 0 32 32" width="28" height="28" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><ellipse cx="16" cy="10" rx="8" ry="3"/><path d="M8 10l2 12h12l2-12"/><line x1="13" y1="16" x2="19" y2="16"/></svg>`;
+  if (name.includes('Pulse') || name.includes('Oximeter'))
+    return `<svg viewBox="0 0 32 32" width="28" height="28" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M4 17h4l3-6 4 10 3-8 2 4h8"/></svg>`;
+  return `<svg viewBox="0 0 32 32" width="28" height="28" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><rect x="6" y="8" width="20" height="16" rx="3"/><line x1="11" y1="4" x2="11" y2="8"/><line x1="21" y1="4" x2="21" y2="8"/></svg>`;
+}
+
+function switchDeviceTab(tab) {
+  state.deviceActiveTab = tab;
+  document.getElementById('dseg-connected').classList.toggle('active', tab === 'connected');
+  document.getElementById('dseg-disconnected').classList.toggle('active', tab === 'disconnected');
+  renderDeviceList();
+}
+
+function renderDeviceList() {
+  const body = document.getElementById('device-list-body');
+  if (!body) return;
+
+  const tab = state.deviceActiveTab || 'connected';
+  const list = state.devices.filter(d => tab === 'connected' ? d.status === 'Connected' : d.status !== 'Connected');
+
+  const btBadge = `<span class="dv-card-bt-badge">
+    <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6.5 6.5 17.5 17.5"/><polyline points="17.5 6.5 6.5 17.5"/><polyline points="12 3 18 9 12 15"/><polyline points="12 9 6 15"/></svg>
+    Bluetooth
+  </span>`;
+
+  if (list.length === 0) {
+    body.innerHTML = `<div class="dv-empty-tab">
+      <div class="dv-empty-ico">${tab === 'connected' ? '📡' : '🔌'}</div>
+      <div class="dv-empty-ttl">${tab === 'connected' ? 'No connected devices' : 'No disconnected devices'}</div>
+      <div class="dv-empty-sub">${tab === 'connected' ? 'Pair a health device to start syncing your vitals automatically.' : 'All your devices are connected and syncing.'}</div>
+    </div>`;
+    return;
+  }
+
+  body.innerHTML = list.map(d => {
+    const isConn = d.status === 'Connected';
+    const iconHtml = deviceIconSvg(d.name, isConn);
+    if (isConn) {
+      return `<div class="dv-card">
+        <div class="dv-card-top">
+          <div class="dv-icon-wrap conn">${iconHtml}</div>
+          <div class="dv-card-info">
+            <div class="dv-card-name">${d.name}</div>
+            <div class="dv-card-meta">
+              <span>Synced ${d.lastSync}</span>
+            </div>
+          </div>
+          <div class="dv-status-pill conn"><span class="dv-status-dot"></span>Active</div>
+        </div>
+        <div class="dv-card-divider"></div>
+        <div class="dv-card-foot">
+          <div class="dv-card-reading">Last reading: <strong>${d.lastReading || '—'}</strong></div>
+        </div>
+      </div>`;
+    } else {
+      return `<div class="dv-card">
+        <div class="dv-card-top">
+          <div class="dv-icon-wrap disc">${iconHtml}</div>
+          <div class="dv-card-info">
+            <div class="dv-card-name">${d.name}</div>
+            <div class="dv-card-meta">
+              <span>Last sync: ${d.lastSync}</span>
+            </div>
+          </div>
+          <div class="dv-status-pill disc"><span class="dv-status-dot"></span>Offline</div>
+        </div>
+        <div class="dv-card-divider"></div>
+        <div class="dv-card-disconn-foot">
+          <span class="dv-last-sync">Last reading: <strong style="color:#1A2D45">${d.lastReading || '—'}</strong></span>
+          <button class="dv-reconnect-btn" onclick="alert('Reconnecting…')">Reconnect</button>
+        </div>
+      </div>`;
+    }
+  }).join('');
+}
+
+function goAddDevice() {
+  renderAvailableDevices();
+  pushScreen('screen-add-device');
+}
+
+function renderAvailableDevices() {
+  const body = document.getElementById('avail-device-body');
+  if (!body) return;
+
+  const btDevices  = ALL_DEVICES.filter(d => d.type === 'bluetooth');
+  const apiDevices = ALL_DEVICES.filter(d => d.type === 'api');
+
+  const connectedNames = new Set(state.devices.filter(d => d.status === 'Connected').map(d => d.name));
+
+  const renderGroup = (list) => list.map(d => {
+    const isConn = connectedNames.has(d.name);
+    const btnHtml = isConn
+      ? `<button class="avail-connect-btn done">✓ Connected</button>`
+      : `<button class="avail-connect-btn" onclick="connectDevice('${d.name}')">Connect</button>`;
+    return `
+      <div class="avail-card">
+        <div class="device-icon-box ${isConn ? 'dib-connected' : 'dib-disconnected'}" style="flex-shrink:0">${deviceIconSvg(d.name, isConn)}</div>
+        <div class="avail-card-info">
+          <div class="avail-card-name">${d.name}</div>
+          <div class="avail-card-desc">${d.desc}</div>
+        </div>
+        ${btnHtml}
+      </div>`;
+  }).join('');
+
+  body.innerHTML = renderGroup(btDevices) + renderGroup(apiDevices);
+}
+
+function connectDevice(name) {
+  const existing = state.devices.find(d => d.name === name);
+  if (existing) {
+    existing.status = 'Connected';
+    existing.lastSync = 'Just now';
+  } else {
+    const meta = ALL_DEVICES.find(d => d.name === name);
+    state.devices.push({ id:'dv'+Date.now(), name, type: meta.type, status:'Connected', lastSync:'Just now' });
+  }
+  renderAvailableDevices();
+  renderDeviceList();
+  showToast(name + ' connected successfully', 'success');
+}
+
+function removeDevice(id) {
+  state.devices = state.devices.filter(d => d.id !== id);
+  renderDeviceList();
+  showToast('Device removed', 'success');
+}
+
+/* ════════════════════════════════════════════════════
+   DRUG SEARCH
+════════════════════════════════════════════════════ */
+const DRUG_LIST = [
+  'Amoxicillin','Aspirin','Atorvastatin','Azithromycin','Amlodipine',
+  'Cetirizine','Ciprofloxacin','Clopidogrel','Doxycycline',
+  'Enalapril','Furosemide','Gabapentin','Hydrochlorothiazide',
+  'Ibuprofen','Insulin Glargine','Levothyroxine','Lisinopril','Losartan',
+  'Metformin','Methotrexate','Metoprolol','Omeprazole',
+  'Pantoprazole','Paracetamol','Prednisone','Ramipril',
+  'Sertraline','Simvastatin','Warfarin',
+];
+
+function onDrugSearch(val) {
+  const dd = document.getElementById('drug-dropdown');
+  const q = val.trim().toLowerCase();
+  if (!q) { dd.classList.remove('open'); dd.innerHTML=''; resetDosage(); checkFormComplete(); return; }
+  resetDosage(); checkFormComplete();
+  const matches = DRUG_LIST.filter(d => d.toLowerCase().includes(q)).slice(0,8);
+  if (!matches.length) { dd.classList.remove('open'); dd.innerHTML=''; return; }
+  dd.innerHTML = matches.map(d => {
+    const idx = d.toLowerCase().indexOf(q);
+    const hi = d.slice(0,idx) + '<mark>' + d.slice(idx,idx+q.length) + '</mark>' + d.slice(idx+q.length);
+    return `<div class="drug-opt" onmousedown="selectDrug('${d}')">${hi}</div>`;
+  }).join('');
+  dd.classList.add('open');
+}
+function selectDrug(name) {
+  document.getElementById('f-drug').value = name;
+  document.getElementById('f-drug-err').textContent = '';
+  document.getElementById('f-drug').classList.remove('err');
+  const dd = document.getElementById('drug-dropdown');
+  dd.classList.remove('open'); dd.innerHTML='';
+  resetDosage();
+  checkFormComplete();
+}
+function hideDrugDropdown() {
+  setTimeout(() => {
+    const dd = document.getElementById('drug-dropdown');
+    dd.classList.remove('open'); dd.innerHTML='';
+  }, 150);
+}
+
+/* ════════════════════════════════════════════════════
+   DOSAGE DROPDOWN
+════════════════════════════════════════════════════ */
+const DRUG_DOSAGES = {
+  'Amoxicillin':         [125, 250, 500, 875],
+  'Aspirin':             [75, 81, 100, 325, 500],
+  'Atorvastatin':        [10, 20, 40, 80],
+  'Azithromycin':        [250, 500],
+  'Amlodipine':          [2.5, 5, 10],
+  'Cetirizine':          [5, 10],
+  'Ciprofloxacin':       [250, 500, 750],
+  'Clopidogrel':         [75, 300],
+  'Doxycycline':         [50, 100, 200],
+  'Enalapril':           [2.5, 5, 10, 20],
+  'Furosemide':          [20, 40, 80],
+  'Gabapentin':          [100, 300, 400, 600, 800],
+  'Hydrochlorothiazide': [12.5, 25, 50],
+  'Ibuprofen':           [200, 400, 600, 800],
+  'Insulin Glargine':    [10, 20, 30, 40, 50],
+  'Levothyroxine':       [25, 50, 75, 100, 125, 150],
+  'Lisinopril':          [5, 10, 20, 40],
+  'Losartan':            [25, 50, 100],
+  'Metformin':           [500, 850, 1000],
+  'Methotrexate':        [2.5, 5, 7.5, 10, 15, 25],
+  'Metoprolol':          [25, 50, 100, 200],
+  'Omeprazole':          [10, 20, 40],
+  'Pantoprazole':        [20, 40],
+  'Paracetamol':         [325, 500, 650, 1000],
+  'Prednisone':          [5, 10, 20, 40, 60],
+  'Ramipril':            [1.25, 2.5, 5, 10],
+  'Sertraline':          [25, 50, 100],
+  'Simvastatin':         [10, 20, 40, 80],
+  'Warfarin':            [1, 2, 2.5, 5, 7.5, 10],
+};
+const DEFAULT_DOSAGES = [5, 10, 25, 50, 100, 200, 250, 500];
+
+const formState = { dosage: null };
+
+function resetDosage() {
+  formState.dosage = null;
+  const txt = document.getElementById('dosage-trigger-txt');
+  if (txt) { txt.textContent = 'Select dosage'; txt.className = 'date-trigger-ph'; }
+  const el = document.getElementById('dosage-trigger');
+  if (el) el.classList.remove('err');
+  const err = document.getElementById('f-dosage-err');
+  if (err) err.textContent = '';
+}
+
+function openDosageSheet() {
+  const drug = document.getElementById('f-drug').value.trim();
+  const opts = DRUG_DOSAGES[drug] || DEFAULT_DOSAGES;
+  const sub = document.getElementById('dosage-sheet-sub');
+  if (sub) sub.textContent = drug ? drug : 'Common dosages';
+  const list = document.getElementById('dosage-sheet-list');
+  list.innerHTML = opts.map(d => `
+    <div onclick="selectDosage(${d})" style="
+      display:flex;align-items:center;justify-content:space-between;
+      padding:13px 16px;background:#F8FAFC;border-radius:12px;
+      cursor:pointer;transition:background .12s;
+    " onmousedown="this.style.background='#EEF2F8'" onmouseup="this.style.background='#F8FAFC'">
+      <span style="font-size:15px;font-weight:600;color:#1A1A2E">${d} mg</span>
+      ${formState.dosage === d ? `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1A2D45" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
+    </div>
+  `).join('');
+  document.getElementById('dosage-backdrop').classList.add('open');
+}
+
+function closeDosageSheet() {
+  document.getElementById('dosage-backdrop').classList.remove('open');
+}
+
+function onDosageBackdropClick(e) {
+  if (e.target === document.getElementById('dosage-backdrop')) closeDosageSheet();
+}
+
+function selectDosage(val) {
+  formState.dosage = val;
+  const txt = document.getElementById('dosage-trigger-txt');
+  txt.textContent = val + ' mg';
+  txt.className = 'date-trigger-txt';
+  document.getElementById('f-dosage-err').textContent = '';
+  document.getElementById('dosage-trigger').classList.remove('err');
+  closeDosageSheet();
+  checkFormComplete();
+}
+
+/* ════════════════════════════════════════════════════
+   FORM COMPLETENESS CHECK
+════════════════════════════════════════════════════ */
+function checkFormComplete() {
+  const drug  = (document.getElementById('f-drug')?.value || '').trim();
+  const ok = drug &&
+             formState.dosage !== null &&
+             state.formSelections.form &&
+             state.formSelections.freq &&
+             state.formSelections.meal &&
+             calState.startDate &&
+             calState.endDate;
+  const btn = document.getElementById('submit-med-btn');
+  if (!btn) return;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.4';
+  btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+}
+
+/* ════════════════════════════════════════════════════
+   CALENDAR BOTTOM SHEET
+════════════════════════════════════════════════════ */
+const calState = { target: null, year: 0, month: 0, startDate: null, endDate: null };
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS_SHORT = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+function openCal(target) {
+  const now = new Date();
+  calState.target = target;
+  calState.year = now.getFullYear();
+  calState.month = now.getMonth();
+  document.getElementById('cal-target-lbl').textContent = target === 'start' ? 'Select start date' : 'Select end date';
+  renderCal();
+  document.getElementById('cal-backdrop').classList.add('open');
+}
+function closeCal() {
+  document.getElementById('cal-backdrop').classList.remove('open');
+  calState.target = null;
+}
+function onCalBackdropClick(e) {
+  if (e.target === document.getElementById('cal-backdrop')) closeCal();
+}
+function calNav(dir) {
+  calState.month += dir;
+  if (calState.month < 0)  { calState.month = 11; calState.year--; }
+  if (calState.month > 11) { calState.month = 0;  calState.year++; }
+  renderCal();
+}
+function renderCal() {
+  document.getElementById('cal-month-lbl').textContent = MONTHS[calState.month] + ' ' + calState.year;
+  const firstDay = new Date(calState.year, calState.month, 1).getDay();
+  const daysInMonth = new Date(calState.year, calState.month + 1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const grid = document.getElementById('cal-grid');
+  let html = DAYS_SHORT.map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(calState.year, calState.month, d);
+    const isToday = date.getTime() === today.getTime();
+    const isStart = calState.startDate && date.getTime() === calState.startDate.getTime();
+    const isEnd   = calState.endDate   && date.getTime() === calState.endDate.getTime();
+    const inRange = calState.startDate && calState.endDate &&
+                    date > calState.startDate && date < calState.endDate;
+    let cls = 'cal-day';
+    if (isStart && calState.endDate) cls += ' range-start';
+    else if (isEnd && calState.startDate) cls += ' range-end';
+    else if (isStart || isEnd) cls += ' selected';
+    else if (inRange) cls += ' in-range';
+    if (isToday) cls += ' today';
+    html += `<div class="${cls}" onclick="selectCalDay(${d})">${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+function selectCalDay(d) {
+  const picked = new Date(calState.year, calState.month, d);
+  if (calState.target === 'start') {
+    calState.startDate = picked;
+    if (calState.endDate && calState.endDate < picked) { calState.endDate = null; resetDt('end'); }
+    setDateDisplay('start', picked);
+  } else {
+    calState.endDate = picked;
+    if (calState.startDate && calState.startDate > picked) { calState.startDate = null; resetDt('start'); }
+    setDateDisplay('end', picked);
+  }
+  renderCal();
+  checkFormComplete();
+  setTimeout(closeCal, 260);
+}
+function setDateDisplay(target, date) {
+  const dd = String(date.getDate()).padStart(2,'0');
+  const mm = String(date.getMonth()+1).padStart(2,'0');
+  const yyyy = date.getFullYear();
+  const str = `${dd}/${mm}/${yyyy}`;
+  const txt = document.getElementById('dt-'+target+'-txt');
+  txt.textContent = str;
+  txt.className = 'date-trigger-txt';
+  document.getElementById('f-'+target+'-err').textContent = '';
+  document.getElementById('dt-'+target).classList.remove('err');
+}
+
+function validateDateStr(d) {
+  return /^\d{2}\/\d{2}\/\d{4}$/.test(d);
+}
+
+function onSubmitMed() {
+  let valid = true;
+  const drug  = document.getElementById('f-drug').value.trim();
+  const dosage= formState.dosage !== null ? String(formState.dosage) : '';
+  const pills = parseInt(document.getElementById('f-pills').value) || 1;
+  const notes = document.getElementById('f-notes').value.trim();
+
+  const fmtDate = d => d ? String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear() : '';
+  const start = fmtDate(calState.startDate);
+  const end   = fmtDate(calState.endDate);
+
+  // Validate
+  if (!drug) {
+    document.getElementById('f-drug-err').textContent = 'Medicine name is required';
+    document.getElementById('f-drug').classList.add('err');
+    valid = false;
+  } else {
+    document.getElementById('f-drug-err').textContent = '';
+    document.getElementById('f-drug').classList.remove('err');
+  }
+  if (formState.dosage === null) {
+    document.getElementById('f-dosage-err').textContent = 'Dosage is required';
+    document.getElementById('dosage-trigger').classList.add('err');
+    valid = false;
+  } else {
+    document.getElementById('f-dosage-err').textContent = '';
+    document.getElementById('dosage-trigger').classList.remove('err');
+  }
+  if (!calState.startDate) {
+    document.getElementById('f-start-err').textContent = 'Start date is required';
+    document.getElementById('dt-start').classList.add('err');
+    valid = false;
+  } else {
+    document.getElementById('f-start-err').textContent = '';
+    document.getElementById('dt-start').classList.remove('err');
+  }
+  if (!calState.endDate) {
+    document.getElementById('f-end-err').textContent = 'End date is required';
+    document.getElementById('dt-end').classList.add('err');
+    valid = false;
+  } else {
+    document.getElementById('f-end-err').textContent = '';
+    document.getElementById('dt-end').classList.remove('err');
+  }
+
+  if (!valid) return;
+
+  // Build time array based on frequency
+  const freqTimeMap = {
+    'Once Daily':        ['08:00 AM'],
+    'Twice Daily':       ['08:00 AM','08:00 PM'],
+    'Three Times Daily': ['08:00 AM','02:00 PM','08:00 PM'],
+    '3× Daily':          ['08:00 AM','02:00 PM','08:00 PM'],
+    'Weekly':            ['08:00 AM'],
+  };
+
+  const btn = document.getElementById('submit-med-btn');
+  btn.classList.add('loading');
+  btn.textContent = '';
+
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    btn.textContent = state.editingMedId ? 'Save Changes' : 'Add Medication';
+
+    const freq = state.formSelections.freq === '3× Daily' ? 'Three Times Daily' : state.formSelections.freq;
+
+    if (state.editingMedId) {
+      const idx = state.medications.findIndex(m => m.id === state.editingMedId);
+      if (idx !== -1) {
+        state.medications[idx] = {
+          ...state.medications[idx],
+          drugName: drug, form: state.formSelections.form,
+          dosage, pillsPerDose: pills, frequency: freq,
+          mealTime: state.formSelections.meal,
+          timeOfIntake: freqTimeMap[freq] || ['08:00 AM'],
+          startDate: start, endDate: end, clinicalInstruction: notes,
+        };
+        // Re-render detail
+        renderMedDetail(state.editingMedId);
+      }
+      showToast('Medication updated successfully', 'success');
+      // pop twice (back to detail)
+      goBack();
+    } else {
+      const newMed = {
+        id: 'm' + Date.now(), drugName: drug, form: state.formSelections.form,
+        dosage, pillsPerDose: pills, status: 'Active', frequency: freq,
+        mealTime: state.formSelections.meal,
+        timeOfIntake: freqTimeMap[freq] || ['08:00 AM'],
+        startDate: start, endDate: end, clinicalInstruction: notes,
+      };
+      state.medications.unshift(newMed);
+      showToast('Medication added successfully', 'success');
+      goBack();
+      renderMedList();
+    }
+  }, 900);
+}
+
+/* ════════════════════════════════════════════════════
+   DELETE MEDICATION
+════════════════════════════════════════════════════ */
+function showDeleteModal() {
+  document.getElementById('delete-modal').classList.add('open');
+}
+function hideDeleteModal() {
+  document.getElementById('delete-modal').classList.remove('open');
+}
+function onConfirmDelete() {
+  hideDeleteModal();
+  state.medications = state.medications.filter(m => m.id !== state.currentMedId);
+  renderMedList();
+  showToast('Medication deleted', 'success');
+  setTimeout(() => goBack(), 400);
+}
+
+/* ════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════ */
+let toastTimeout = null;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  const ico = document.getElementById('toast-ico');
+  t.className = 'toast ' + type;
+  ico.textContent = type === 'success' ? '✓' : '!';
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════ */
+renderDashboard();
+</script>
+</body>
+</html>

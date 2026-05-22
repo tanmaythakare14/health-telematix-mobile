@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health Telematix — Login Preview</title>
+  <style>
+    :root {
+      --background:       #ffffff;
+      --foreground:       #0f172a;
+      --muted:            #f1f5f9;
+      --muted-foreground: #64748b;
+      --border:           #e2e8f0;
+      --input:            #e2e8f0;
+      --ring:             #1A2D45;
+      --primary:          #1A2D45;
+      --primary-dark:     #0f1d2e;
+      --primary-fg:       #ffffff;
+      --destructive:      #ef4444;
+      --radius:           0.375rem;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 35% 25%, #0a1628 0%, #05080f 60%, #000 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Helvetica Neue', sans-serif;
+      padding: 40px 20px;
+      gap: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-label {
+      color: rgba(255,255,255,0.28);
+      font-size: 10.5px; font-weight: 600;
+      letter-spacing: 2.5px; text-transform: uppercase;
+    }
+
+    /* ─── iPhone Frame ───────────────────────────────────────── */
+    .iphone {
+      position: relative;
+      width: 393px; height: 852px;
+      background: linear-gradient(160deg, #5e5e62 0%, #3d3d3f 35%, #2e2e30 65%, #1e1e1f 100%);
+      border-radius: 54px;
+      padding: 11px;
+      box-shadow:
+        0 0 0 0.5px rgba(255,255,255,0.15),
+        0 0 0 1.5px rgba(0,0,0,0.95),
+        0 50px 120px rgba(0,0,0,0.95),
+        0 12px 36px rgba(0,0,0,0.7),
+        inset 0 1.5px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.5);
+    }
+    .iphone::before {
+      content: ''; position: absolute; inset: 0; border-radius: 54px;
+      background: linear-gradient(130deg, rgba(255,255,255,0.07) 0%, transparent 45%);
+      pointer-events: none;
+    }
+    .btn { position: absolute; background: #3a3a3c; }
+    .btn-mute   { left:-3px; top:118px; width:3px; height:28px; border-radius:1.5px 0 0 1.5px; }
+    .btn-vol-up { left:-3px; top:160px; width:3px; height:56px; border-radius:1.5px 0 0 1.5px; }
+    .btn-vol-dn { left:-3px; top:228px; width:3px; height:56px; border-radius:1.5px 0 0 1.5px; }
+    .btn-power  { right:-3px; top:160px; width:3px; height:72px; border-radius:0 1.5px 1.5px 0; }
+
+    /* ─── Screen ─────────────────────────────────────────────── */
+    .screen {
+      width: 100%; height: 100%;
+      border-radius: 44px;
+      overflow: hidden;
+      position: relative;
+      background: #000c1a;
+      display: flex; flex-direction: column;
+    }
+
+    /* ─── Dynamic Island ─────────────────────────────────────── */
+    .dynamic-island {
+      position: absolute; top: 13px; left: 50%;
+      transform: translateX(-50%);
+      width: 118px; height: 33px;
+      background: #000; border-radius: 20px;
+      z-index: 200;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .dynamic-island::after {
+      content: ''; position: absolute;
+      right: 18px; top: 50%; transform: translateY(-50%);
+      width: 10px; height: 10px;
+      background: #111; border-radius: 50%;
+    }
+
+    /* ─── Full-screen views ──────────────────────────────────── */
+    .view { display: none; flex-direction: column; height: 100%; }
+    .view.active { display: flex; }
+
+    /* ═══════════════════════════════════════════════════════════
+       LOGIN VIEW
+    ═══════════════════════════════════════════════════════════ */
+
+    /* Status Bar — on dark bg */
+    .status-bar-dark {
+      position: absolute; top: 0; left: 0; right: 0;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 28px 0; height: 56px; z-index: 150;
+    }
+    .status-time { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+
+    /* Hero */
+    .hero {
+      height: 350px; flex-shrink: 0; position: relative; overflow: hidden;
+      background: linear-gradient(175deg, #000c1a 0%, #001329 40%, #001d3d 100%);
+    }
+    .hero-glow {
+      position: absolute; width: 320px; height: 320px; border-radius: 50%;
+      top: -60px; left: 50%; transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(0,119,182,0.2) 0%, rgba(3,4,94,0.15) 40%, transparent 70%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(0,180,216,0.035) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,180,216,0.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .hero-svg { position: absolute; top: 28px; left: 50%; transform: translateX(-50%); width: 300px; height: 230px; }
+    .hero-brand {
+      position: absolute; bottom: 24px; left: 0; right: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 7px; z-index: 10;
+    }
+    .logo-mark {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #0077b6, #023e8a);
+      border-radius: 15px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 28px rgba(0,119,182,0.5), 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .logo-initials { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: 1.5px; }
+    .brand-name { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 2.5px; text-transform: uppercase; }
+    .care-team { display: flex; align-items: center; margin-top: 3px; }
+    .avatar { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.12); margin-left: -6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .avatar:first-child { margin-left: 0; }
+    .av1 { background: linear-gradient(135deg,#0077b6,#00b4d8); }
+    .av2 { background: linear-gradient(135deg,#2d6a4f,#52b788); }
+    .av3 { background: linear-gradient(135deg,#7209b7,#b5179e); }
+    .av4 { background: linear-gradient(135deg,#d62828,#e76f51); }
+    .av5 { background: linear-gradient(135deg,#f77f00,#fcbf49); }
+    .av-more { background: rgba(255,255,255,0.1); font-size: 8.5px; color: rgba(255,255,255,0.65); }
+    .care-label { font-size: 10px; color: rgba(255,255,255,0.3); margin-left: 8px; }
+
+    /* Sheet */
+    .sheet {
+      flex: 1; background: var(--background);
+      border-radius: 28px 28px 44px 44px;
+      padding: 24px 24px 32px;
+      overflow-y: auto; overflow-x: hidden;
+      scrollbar-width: none;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.14);
+      z-index: 5; margin-top: -20px;
+    }
+    .sheet::-webkit-scrollbar { display: none; }
+    .sheet-handle { width: 32px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 22px; }
+
+    .step { display: none; }
+    .step.active { display: block; animation: fadeUp 0.28s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    .headline { font-size: 24px; font-weight: 700; color: var(--foreground); letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 5px; }
+    .subtitle { font-size: 14px; color: var(--muted-foreground); line-height: 1.55; margin-bottom: 26px; }
+    .subtitle strong { color: var(--primary); font-weight: 600; }
+
+    .shad-label { display: block; font-size: 13px; font-weight: 500; color: var(--foreground); line-height: 1; margin-bottom: 7px; letter-spacing: -0.1px; }
+
+    .input-group { margin-bottom: 18px; }
+    .shad-input-row {
+      display: flex; align-items: stretch; height: 40px;
+      border: 1px solid var(--input); border-radius: var(--radius);
+      background: var(--background); transition: border-color 0.15s, box-shadow 0.15s; overflow: hidden;
+    }
+    .shad-input-row:focus-within { border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 14%, transparent); }
+    .shad-input-row.is-error { border-color: var(--destructive); box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 10%, transparent); }
+
+    .cc-pill {
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      padding: 0 11px 0 12px; background: var(--muted); border-right: 1px solid var(--border);
+      cursor: pointer; flex-shrink: 0; transition: background 0.12s; user-select: none; line-height: 1;
+    }
+    .cc-pill:hover { background: #e8edf2; }
+    .cc-flag { font-size: 15px; line-height: 1; display: flex; align-items: center; }
+    .cc-code { font-size: 13px; font-weight: 600; color: var(--foreground); line-height: 1; }
+    .cc-caret { font-size: 9px; color: var(--muted-foreground); margin-left: 1px; line-height: 1; display: flex; align-items: center; }
+
+    .shad-text-input {
+      flex: 1; border: none; outline: none; background: transparent;
+      padding: 0 12px; font-size: 14px; font-weight: 400; color: var(--foreground);
+      font-family: inherit; letter-spacing: 0.4px;
+    }
+    .shad-text-input::placeholder { color: var(--muted-foreground); font-weight: 400; }
+
+    .form-message { font-size: 12px; color: var(--destructive); margin-top: 5px; line-height: 1.4; display: none; }
+    .form-message.visible { display: block; }
+
+    /* OTP — subtle fill, no primary bg */
+    .otp-row { display: flex; gap: 6px; margin-bottom: 5px; width: 100%; }
+    .otp-input {
+      flex: 1 1 0; min-width: 0; width: 0; height: 52px;
+      border: 1px solid var(--input); border-radius: var(--radius);
+      background: var(--background); font-size: 20px; font-weight: 700;
+      color: var(--foreground); text-align: center; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: inherit; caret-color: var(--ring); padding: 0;
+    }
+    .otp-input:focus { border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 14%, transparent); }
+    /* subtle — just a light gray tint, no primary color bleed */
+    .otp-input.filled { border-color: #cbd5e1; background: #f8fafc; color: var(--foreground); }
+
+    .resend-row { display: flex; justify-content: center; padding: 12px 0; }
+    .timer-text { font-size: 13px; color: var(--muted-foreground); }
+    .timer-text b { color: var(--primary); font-weight: 700; }
+    .resend-btn {
+      background: none; border: none; font-size: 13px; font-weight: 600;
+      color: var(--primary); cursor: pointer; font-family: inherit;
+      padding: 4px 10px; border-radius: 6px; transition: background 0.12s;
+    }
+    .resend-btn:hover { background: color-mix(in srgb, var(--ring) 8%, transparent); }
+
+    .shad-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; height: 40px; padding: 0 16px; border-radius: var(--radius); border: none;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--primary-fg); font-size: 14px; font-weight: 600; letter-spacing: 0.1px;
+      cursor: pointer; font-family: inherit;
+      transition: opacity 0.15s, box-shadow 0.15s, transform 0.12s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 4px 14px rgba(26,45,69,0.25);
+      position: relative; overflow: hidden;
+    }
+    .shad-btn::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(rgba(255,255,255,0.08), transparent); pointer-events: none;
+    }
+    .shad-btn:hover:not(:disabled) { opacity: 0.9; box-shadow: 0 2px 6px rgba(0,0,0,0.14), 0 6px 20px rgba(26,45,69,0.3); }
+    .shad-btn:active:not(:disabled) { transform: translateY(1px); opacity: 0.88; }
+    .shad-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .shad-btn .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.75s linear infinite; display: none; }
+    .shad-btn.loading .btn-label, .shad-btn.loading .btn-icon { display: none; }
+    .shad-btn.loading .spinner { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px; background: transparent; border: none;
+      font-size: 13px; font-weight: 500; color: var(--muted-foreground); cursor: pointer;
+      padding: 6px 0; margin-bottom: 18px; font-family: inherit; transition: color 0.12s;
+    }
+    .back-btn:hover { color: var(--foreground); }
+    .back-btn svg { width: 15px; height: 15px; }
+
+    .privacy-text { text-align: center; font-size: 11.5px; color: var(--muted-foreground); line-height: 1.6; margin-top: 16px; }
+    .privacy-text a { color: var(--primary); font-weight: 500; text-decoration: none; }
+
+    .secure-badge { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 14px; font-size: 11px; color: var(--muted-foreground); }
+    .secure-badge svg { color: #22c55e; flex-shrink: 0; }
+
+
+    /* ═══════════════════════════════════════════════════════════
+       CARE PLAN VIEW
+    ═══════════════════════════════════════════════════════════ */
+    .care-view {
+      display: none; flex-direction: column; height: 100%;
+      background: #f5f7fa; animation: fadeIn 0.35s ease;
+    }
+    .care-view.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ── Top Header ─────────────────────────────────────────── */
+    .care-header {
+      background: var(--primary);
+      padding: 0 20px 18px;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .care-status-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 14px; height: 50px;
+    }
+    .care-status-time { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+    .care-status-icons { display: flex; align-items: center; gap: 5px; }
+
+    .care-header-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 4px;
+    }
+    .care-greeting { flex: 1; }
+    .care-greeting-hi {
+      font-size: 22px; font-weight: 700; color: #fff;
+      letter-spacing: -0.4px; line-height: 1.2;
+    }
+    .care-greeting-sub {
+      font-size: 12.5px; color: rgba(255,255,255,0.55);
+      margin-top: 3px; font-weight: 400;
+    }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .header-icon-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; position: relative;
+      transition: background 0.15s;
+    }
+    .header-icon-btn:hover { background: rgba(255,255,255,0.2); }
+    .header-icon-btn svg { color: #fff; }
+    .notif-dot {
+      position: absolute; top: 6px; right: 7px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #f87171;
+      border: 1.5px solid var(--primary);
+    }
+    .user-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, #4f9ec4, #2d6e99);
+      border: 2px solid rgba(255,255,255,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff;
+      cursor: pointer; letter-spacing: 0.5px;
+    }
+
+    /* Search bar */
+    .header-search {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 0 14px; height: 38px;
+      margin-top: 14px;
+    }
+    .header-search svg { color: rgba(255,255,255,0.5); flex-shrink: 0; }
+    .header-search span { font-size: 13.5px; color: rgba(255,255,255,0.45); }
+
+    /* ── Scrollable Content ─────────────────────────────────── */
+    .care-body {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      scrollbar-width: none; padding: 16px 16px 0;
+    }
+    .care-body::-webkit-scrollbar { display: none; }
+
+    /* Section label */
+    .section-label {
+      font-size: 11px; font-weight: 700; color: var(--muted-foreground);
+      letter-spacing: 0.8px; text-transform: uppercase;
+      margin-bottom: 10px; margin-top: 4px;
+    }
+
+    /* Program chips */
+    .program-row { display: flex; gap: 8px; margin-bottom: 18px; }
+    .program-chip {
+      flex: 1; border-radius: 12px; padding: 12px 10px;
+      display: flex; flex-direction: column; gap: 6px;
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .program-chip:hover { transform: translateY(-1px); }
+    .pc-apcm { background: linear-gradient(135deg, #1A2D45, #2a4568); }
+    .pc-rpm  { background: linear-gradient(135deg, #0c5275, #0a7db5); }
+    .pc-bhi  { background: linear-gradient(135deg, #4a2060, #7b3fa0); }
+    .pc-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pc-icon svg { color: #fff; }
+    .pc-label { font-size: 12px; font-weight: 700; color: #fff; }
+    .pc-count { font-size: 18px; font-weight: 800; color: #fff; line-height: 1; }
+    .pc-sub { font-size: 10px; color: rgba(255,255,255,0.6); }
+
+    /* Task card */
+    .task-card {
+      background: #fff; border-radius: 12px; padding: 14px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      display: flex; align-items: flex-start; gap: 12px;
+      cursor: pointer; transition: box-shadow 0.15s;
+    }
+    .task-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .task-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ti-blue   { background: #eff6ff; }
+    .ti-green  { background: #f0fdf4; }
+    .ti-orange { background: #fff7ed; }
+    .ti-purple { background: #faf5ff; }
+    .task-icon svg { width: 16px; height: 16px; }
+    .task-body { flex: 1; min-width: 0; }
+    .task-title { font-size: 13px; font-weight: 600; color: var(--foreground); margin-bottom: 3px; }
+    .task-meta { font-size: 11.5px; color: var(--muted-foreground); }
+    .task-badge {
+      font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px;
+      flex-shrink: 0; align-self: flex-start; margin-top: 2px;
+    }
+    .badge-urgent { background: #fef2f2; color: #dc2626; }
+    .badge-today  { background: #fff7ed; color: #ea580c; }
+    .badge-done   { background: #f0fdf4; color: #16a34a; }
+
+    /* Patient vitals strip */
+    .vitals-row { display: flex; gap: 8px; margin-bottom: 18px; }
+    .vital-card {
+      flex: 1; background: #fff; border-radius: 12px;
+      padding: 12px 10px; border: 1px solid var(--border);
+      text-align: center;
+    }
+    .vital-val { font-size: 16px; font-weight: 800; color: var(--foreground); line-height: 1; margin-bottom: 3px; }
+    .vital-val.alert { color: #dc2626; }
+    .vital-unit { font-size: 9px; font-weight: 600; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.5px; }
+    .vital-label { font-size: 10.5px; color: var(--muted-foreground); margin-top: 4px; }
+
+    /* ── Bottom Navigation ──────────────────────────────────── */
+    .bottom-nav {
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: stretch;
+      padding: 0 4px;
+      height: 72px;
+      flex-shrink: 0;
+      border-radius: 0 0 44px 44px;
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 4px; cursor: pointer;
+      border: none; background: none;
+      padding: 10px 4px 14px;
+      font-family: inherit;
+      transition: opacity 0.15s;
+      position: relative;
+    }
+    .nav-item:hover { opacity: 0.75; }
+    .nav-icon {
+      width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    }
+    .nav-label { font-size: 10.5px; font-weight: 500; color: var(--muted-foreground); letter-spacing: -0.1px; }
+    /* Active state */
+    .nav-item.active .nav-label { color: var(--primary); font-weight: 700; }
+    .nav-item.active .nav-icon svg { color: var(--primary); }
+    .nav-item.active .nav-active-pill {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 28px; height: 3px; background: var(--primary);
+      border-radius: 0 0 3px 3px;
+    }
+    .nav-active-pill { display: none; }
+    .nav-item.active .nav-active-pill { display: block; }
+    .nav-icon svg { color: #94a3b8; transition: color 0.15s; }
+  </style>
+</head>
+<body>
+  <p class="page-label">iPhone 17 Pro · Health Telematix</p>
+
+  <div class="iphone">
+    <div class="btn btn-mute"></div>
+    <div class="btn btn-vol-up"></div>
+    <div class="btn btn-vol-dn"></div>
+    <div class="btn btn-power"></div>
+
+    <div class="screen">
+      <div class="dynamic-island"></div>
+
+      <!-- ════════════════ LOGIN VIEW ════════════════ -->
+      <div class="view active" id="view-login" style="flex-direction:column;">
+
+        <div class="status-bar-dark">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="4" width="3" height="8" rx="1" fill="white" opacity="0.4"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" fill="white" opacity="0.6"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="white" opacity="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="white"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 3C9.8 3 11.4 3.7 12.6 4.8L14 3.4C12.4 1.9 10.3 1 8 1 5.7 1 3.6 1.9 2 3.4L3.4 4.8C4.6 3.7 6.2 3 8 3Z" fill="white" opacity="0.5"/><path d="M8 5.5C9.2 5.5 10.3 6 11.1 6.8L12.5 5.4C11.3 4.3 9.7 3.5 8 3.5 6.3 3.5 4.7 4.3 3.5 5.4L4.9 6.8C5.7 6 6.8 5.5 8 5.5Z" fill="white" opacity="0.75"/><circle cx="8" cy="10" r="1.5" fill="white"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="white" stroke-opacity="0.35"/><rect x="2" y="2" width="17" height="8" rx="2" fill="white"/><path d="M23 4.5V7.5C23.8 7.2 24.5 6.5 24.5 6 24.5 5.5 23.8 4.8 23 4.5Z" fill="white" opacity="0.4"/></svg>
+          </div>
+        </div>
+
+        <!-- Hero -->
+        <div class="hero">
+          <div class="hero-glow"></div>
+          <div class="hero-grid"></div>
+          <svg class="hero-svg" viewBox="0 0 300 230" fill="none">
+            <circle cx="150" cy="105" r="92" stroke="rgba(0,119,182,0.16)" stroke-width="1" stroke-dasharray="4 7"/>
+            <circle cx="150" cy="105" r="67" stroke="rgba(0,180,216,0.13)" stroke-width="1" stroke-dasharray="3 6"/>
+            <circle cx="150" cy="105" r="44" fill="rgba(0,119,182,0.05)" stroke="rgba(0,180,216,0.28)" stroke-width="1"/>
+            <path d="M150 69 L171 79 L171 104 C171 117.5 161.5 128 150 132 C138.5 128 129 117.5 129 104 L129 79 Z" fill="rgba(0,119,182,0.12)" stroke="rgba(0,180,216,0.55)" stroke-width="1.5"/>
+            <path d="M150 75 L166 84 L166 104 C166 115.5 159 124.5 150 128 C141 124.5 134 115.5 134 104 L134 84 Z" fill="rgba(0,119,182,0.18)"/>
+            <rect x="144" y="91" width="12" height="28" rx="3" fill="rgba(0,180,216,0.65)"/>
+            <rect x="136" y="99" width="28" height="12" rx="3" fill="rgba(0,180,216,0.65)"/>
+            <polyline points="18,136 48,136 60,136 66,116 72,156 78,126 84,136 108,136 114,136 117,124 121,148 125,136 282,136" stroke="rgba(0,180,216,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="44" cy="86" r="3" fill="rgba(0,180,216,0.55)"/>
+            <circle cx="44" cy="86" r="6" fill="rgba(0,180,216,0.1)"><animate attributeName="r" values="6;13;6" dur="2.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0;0.3" dur="2.5s" repeatCount="indefinite"/></circle>
+            <circle cx="256" cy="86" r="3" fill="rgba(0,119,182,0.55)"/>
+            <rect x="20" y="55" width="60" height="20" rx="5" fill="rgba(0,18,45,0.75)" stroke="rgba(0,119,182,0.28)" stroke-width="1"/>
+            <text x="50" y="69" text-anchor="middle" fill="rgba(0,180,216,0.85)" font-size="9.5" font-weight="700" font-family="system-ui">98 BPM</text>
+            <rect x="220" y="55" width="62" height="20" rx="5" fill="rgba(0,18,45,0.75)" stroke="rgba(0,119,182,0.28)" stroke-width="1"/>
+            <text x="251" y="69" text-anchor="middle" fill="rgba(0,180,216,0.85)" font-size="9.5" font-weight="700" font-family="system-ui">O₂  99%</text>
+            <rect x="95" y="10" width="110" height="20" rx="5" fill="rgba(0,18,45,0.75)" stroke="rgba(0,119,182,0.28)" stroke-width="1"/>
+            <text x="150" y="24" text-anchor="middle" fill="rgba(0,180,216,0.85)" font-size="9.5" font-weight="700" font-family="system-ui">BP 120/80 mmHg</text>
+          </svg>
+          <div class="hero-brand">
+            <div class="logo-mark"><span class="logo-initials">HT</span></div>
+            <span class="brand-name">Health Telematix</span>
+            <div class="care-team" style="margin-top:5px">
+              <div class="avatar av1">R</div><div class="avatar av2">S</div>
+              <div class="avatar av3">M</div><div class="avatar av4">J</div>
+              <div class="avatar av5">K</div><div class="avatar av-more">+8</div>
+              <span class="care-label">care providers</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sheet -->
+        <div class="sheet" id="sheet">
+          <div class="sheet-handle"></div>
+
+          <!-- Step 1: Phone -->
+          <div class="step active" id="step-phone">
+            <div class="headline">Welcome back</div>
+            <div class="subtitle">Enter your mobile number to sign in</div>
+            <div class="input-group">
+              <label class="shad-label" for="phone-input">Mobile number</label>
+              <div class="shad-input-row" id="phone-row">
+                <div class="cc-pill">
+                  <span class="cc-flag">🇺🇸</span>
+                  <span class="cc-code">+1</span>
+                  <span class="cc-caret">▾</span>
+                </div>
+                <input class="shad-text-input" id="phone-input" type="tel" maxlength="14" inputmode="numeric" autocomplete="tel" placeholder="(555) 000-0000"/>
+              </div>
+              <p class="form-message" id="phone-error">Please enter a valid 10-digit mobile number.</p>
+            </div>
+            <button class="shad-btn" id="send-btn" onclick="onSendOtp()">
+              <span class="btn-label">Send OTP</span>
+              <svg class="btn-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="spinner"></div>
+            </button>
+            <p class="privacy-text" style="margin-top:18px">By continuing, you agree to our <a href="#">Privacy Policy</a> and <a href="#">Terms of Service</a></p>
+          </div>
+
+          <!-- Step 2: OTP -->
+          <div class="step" id="step-otp">
+            <button class="back-btn" onclick="onBack()">
+              <svg viewBox="0 0 15 15" fill="none"><path d="M9.5 3L5.5 7.5L9.5 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Back
+            </button>
+            <div class="headline">Verify your number</div>
+            <div class="subtitle">6-digit code sent to <strong id="masked-phone"></strong></div>
+            <label class="shad-label" style="margin-bottom:8px">One-time passcode</label>
+            <div class="otp-row">
+              <input class="otp-input" id="otp0" maxlength="1" inputmode="numeric" type="tel" autocomplete="off"/>
+              <input class="otp-input" id="otp1" maxlength="1" inputmode="numeric" type="tel"/>
+              <input class="otp-input" id="otp2" maxlength="1" inputmode="numeric" type="tel"/>
+              <input class="otp-input" id="otp3" maxlength="1" inputmode="numeric" type="tel"/>
+              <input class="otp-input" id="otp4" maxlength="1" inputmode="numeric" type="tel"/>
+              <input class="otp-input" id="otp5" maxlength="1" inputmode="numeric" type="tel"/>
+            </div>
+            <p class="form-message" id="otp-error" style="margin-bottom:4px">Please enter the complete 6-digit code.</p>
+            <div class="resend-row">
+              <span class="timer-text" id="timer-text">Resend code in <b id="timer-count">60</b>s</span>
+              <button class="resend-btn" id="resend-btn" style="display:none" onclick="onResend()">Resend code</button>
+            </div>
+            <button class="shad-btn" id="verify-btn" onclick="onVerify()" style="margin-top:4px">
+              <span class="btn-label">Verify &amp; Sign In</span>
+              <svg class="btn-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="spinner"></div>
+            </button>
+            <div class="secure-badge">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L11 3.5V7C11 9.5 9 11.7 6.5 12.5C4 11.7 2 9.5 2 7V3.5L6.5 1Z" fill="rgba(34,197,94,0.15)" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 6.5L6 8L8.5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              256-bit encrypted · HIPAA compliant
+            </div>
+          </div>
+        </div>
+      </div><!-- /view-login -->
+
+      <!-- ════════════════ CARE PLAN VIEW ════════════════ -->
+      <div class="care-view" id="view-careplan">
+
+        <!-- Header -->
+        <div class="care-header">
+          <div class="care-status-bar">
+            <span class="care-status-time">9:41</span>
+            <div class="care-status-icons">
+              <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="4" width="3" height="8" rx="1" fill="white" opacity="0.4"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" fill="white" opacity="0.6"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="white" opacity="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="white"/></svg>
+              <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 3C9.8 3 11.4 3.7 12.6 4.8L14 3.4C12.4 1.9 10.3 1 8 1 5.7 1 3.6 1.9 2 3.4L3.4 4.8C4.6 3.7 6.2 3 8 3Z" fill="white" opacity="0.5"/><path d="M8 5.5C9.2 5.5 10.3 6 11.1 6.8L12.5 5.4C11.3 4.3 9.7 3.5 8 3.5 6.3 3.5 4.7 4.3 3.5 5.4L4.9 6.8C5.7 6 6.8 5.5 8 5.5Z" fill="white" opacity="0.75"/><circle cx="8" cy="10" r="1.5" fill="white"/></svg>
+              <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="white" stroke-opacity="0.35"/><rect x="2" y="2" width="17" height="8" rx="2" fill="white"/><path d="M23 4.5V7.5C23.8 7.2 24.5 6.5 24.5 6 24.5 5.5 23.8 4.8 23 4.5Z" fill="white" opacity="0.4"/></svg>
+            </div>
+          </div>
+          <div class="care-header-row">
+            <div class="care-greeting">
+              <div class="care-greeting-hi">Hello, Dr. Johnson 👋</div>
+              <div class="care-greeting-sub">Health Telematix · 3 alerts today</div>
+            </div>
+            <div class="header-actions">
+              <div class="header-icon-btn">
+                <div class="notif-dot"></div>
+                <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                  <path d="M8.5 1.5C8.5 1.5 8.5 1.5 8.5 1.5C5.46 1.5 3 3.96 3 7V10.5L1.5 12H15.5L14 10.5V7C14 3.96 11.54 1.5 8.5 1.5Z" stroke="white" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+                  <path d="M6.5 12C6.5 13.1 7.4 14 8.5 14C9.6 14 10.5 13.1 10.5 12" stroke="white" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+                </svg>
+              </div>
+              <div class="user-avatar">DJ</div>
+            </div>
+          </div>
+          <div class="header-search">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <span>Search patients or care plans…</span>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="care-body">
+
+          <!-- Active Programs -->
+          <div class="section-label" style="margin-top:14px">Active Programs</div>
+          <div class="program-row">
+            <div class="program-chip pc-apcm">
+              <div class="pc-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L9 5H13L10 8L11 12L7 9.5L3 12L4 8L1 5H5L7 1Z" fill="white" opacity="0.9"/></svg></div>
+              <div class="pc-count">12</div>
+              <div class="pc-label">APCM</div>
+              <div class="pc-sub">patients</div>
+            </div>
+            <div class="program-chip pc-rpm">
+              <div class="pc-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7H3L4.5 3.5L6 10L7.5 5L9 8.5L10 7H13" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="pc-count">8</div>
+              <div class="pc-label">RPM</div>
+              <div class="pc-sub">monitored</div>
+            </div>
+            <div class="program-chip pc-bhi">
+              <div class="pc-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2C4.8 2 3 3.8 3 6C3 8.8 7 12 7 12C7 12 11 8.8 11 6C11 3.8 9.2 2 7 2Z" stroke="white" stroke-width="1.3" fill="none"/><circle cx="7" cy="6" r="1.5" fill="white" opacity="0.8"/></svg></div>
+              <div class="pc-count">5</div>
+              <div class="pc-label">BHI</div>
+              <div class="pc-sub">enrolled</div>
+            </div>
+          </div>
+
+          <!-- Today's vitals summary -->
+          <div class="section-label">Patient Vitals Today</div>
+          <div class="vitals-row" style="margin-bottom:18px">
+            <div class="vital-card">
+              <div class="vital-val alert">148/92</div>
+              <div class="vital-unit">mmHg</div>
+              <div class="vital-label">Blood Pressure</div>
+            </div>
+            <div class="vital-card">
+              <div class="vital-val">97.2</div>
+              <div class="vital-unit">bpm avg</div>
+              <div class="vital-label">Heart Rate</div>
+            </div>
+            <div class="vital-card">
+              <div class="vital-val">98.6</div>
+              <div class="vital-unit">% SpO₂</div>
+              <div class="vital-label">Oxygen</div>
+            </div>
+          </div>
+
+          <!-- Tasks -->
+          <div class="section-label">Today's Care Tasks</div>
+
+          <div class="task-card">
+            <div class="task-icon ti-blue">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M8 2C5.8 2 4 3.8 4 6C4 9.2 8 13 8 13C8 13 12 9.2 12 6C12 3.8 10.2 2 8 2Z" stroke="#3b82f6" stroke-width="1.4" fill="none"/><circle cx="8" cy="6" r="1.5" fill="#3b82f6"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Review BP readings — M. Thompson</div>
+              <div class="task-meta">APCM · Due 10:30 AM</div>
+            </div>
+            <span class="task-badge badge-urgent">Urgent</span>
+          </div>
+
+          <div class="task-card">
+            <div class="task-icon ti-orange">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M3 5H13M3 8H10M3 11H8" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Care plan update — J. Rivera</div>
+              <div class="task-meta">RPM · Due 12:00 PM</div>
+            </div>
+            <span class="task-badge badge-today">Today</span>
+          </div>
+
+          <div class="task-card">
+            <div class="task-icon ti-green">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M4 8L6.5 10.5L12 5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Monthly check-in — P. Williams</div>
+              <div class="task-meta">BHI · Completed 9:00 AM</div>
+            </div>
+            <span class="task-badge badge-done">Done</span>
+          </div>
+
+          <div class="task-card" style="margin-bottom:16px">
+            <div class="task-icon ti-purple">
+              <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="5" width="10" height="8" rx="2" stroke="#a855f7" stroke-width="1.4" fill="none"/><path d="M5 5V4C5 2.9 5.9 2 7 2H9C10.1 2 11 2.9 11 4V5" stroke="#a855f7" stroke-width="1.4" fill="none"/><path d="M6 9H10M8 7V11" stroke="#a855f7" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Medication review — S. Chen</div>
+              <div class="task-meta">RPM · Due 3:00 PM</div>
+            </div>
+            <span class="task-badge badge-today">Today</span>
+          </div>
+
+        </div><!-- /care-body -->
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+
+          <button class="nav-item" onclick="setNav(this)">
+            <div class="nav-active-pill"></div>
+            <div class="nav-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M3 9.5L10 3L17 9.5V17H13V13H7V17H3V9.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="none"/>
+              </svg>
+            </div>
+            <span class="nav-label">Dashboard</span>
+          </button>
+
+          <button class="nav-item active" onclick="setNav(this)">
+            <div class="nav-active-pill"></div>
+            <div class="nav-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <rect x="4" y="2" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/>
+                <path d="M7 7H13M7 10H13M7 13H10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="nav-label">Care Plan</span>
+          </button>
+
+          <button class="nav-item" onclick="setNav(this)">
+            <div class="nav-active-pill"></div>
+            <div class="nav-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <ellipse cx="10" cy="8" rx="3" ry="5" stroke="currentColor" stroke-width="1.6" transform="rotate(-30 10 8)" fill="none"/>
+                <ellipse cx="10" cy="8" rx="3" ry="5" stroke="currentColor" stroke-width="1.6" transform="rotate(30 10 8)" fill="none"/>
+              </svg>
+            </div>
+            <span class="nav-label">Medication</span>
+          </button>
+
+          <button class="nav-item" onclick="setNav(this)">
+            <div class="nav-active-pill"></div>
+            <div class="nav-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <rect x="3" y="5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/>
+                <path d="M7 15V17M13 15V17M5 17H15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M7 9H9M11 9H13M10 7V11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="nav-label">Devices</span>
+          </button>
+
+        </div>
+      </div><!-- /view-careplan -->
+
+    </div><!-- /screen -->
+  </div><!-- /iphone -->
+
+  <script>
+    let phoneVal = '';
+    let timerInterval = null;
+    let timerSec = 60;
+    const OTP_LEN = 6;
+
+    function formatUSPhone(digits) {
+      if (!digits.length) return '';
+      if (digits.length <= 3) return '(' + digits;
+      if (digits.length <= 6) return '(' + digits.slice(0,3) + ') ' + digits.slice(3);
+      return '(' + digits.slice(0,3) + ') ' + digits.slice(3,6) + '-' + digits.slice(6);
+    }
+
+    const phoneInput = document.getElementById('phone-input');
+    const phoneRow   = document.getElementById('phone-row');
+    const phoneError = document.getElementById('phone-error');
+
+    phoneInput.addEventListener('input', e => {
+      const digits = e.target.value.replace(/\D/g,'').slice(0,10);
+      phoneVal = digits;
+      e.target.value = formatUSPhone(digits);
+      if (phoneError.classList.contains('visible')) {
+        phoneError.classList.remove('visible');
+        phoneRow.classList.remove('is-error');
+      }
+    });
+
+    function onSendOtp() {
+      if (phoneVal.length < 10) {
+        phoneRow.classList.add('is-error');
+        phoneError.classList.add('visible');
+        phoneInput.focus(); return;
+      }
+      const btn = document.getElementById('send-btn');
+      btn.classList.add('loading'); btn.disabled = true;
+      setTimeout(() => {
+        btn.classList.remove('loading'); btn.disabled = false;
+        showLoginStep('otp');
+      }, 1100);
+    }
+
+    function showLoginStep(name) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-' + name).classList.add('active');
+      document.getElementById('sheet').scrollTop = 0;
+      if (name === 'otp') {
+        document.getElementById('masked-phone').textContent = '+1 ' + formatUSPhone(phoneVal);
+        startTimer();
+        setTimeout(() => document.getElementById('otp0').focus(), 80);
+      }
+    }
+
+    // OTP boxes
+    for (let i = 0; i < OTP_LEN; i++) {
+      const box = document.getElementById('otp' + i);
+      box.addEventListener('input', e => {
+        const digit = e.target.value.replace(/\D/g,'').slice(-1);
+        e.target.value = digit;
+        box.classList.toggle('filled', digit !== '');
+        document.getElementById('otp-error').classList.remove('visible');
+        if (digit && i < OTP_LEN - 1) document.getElementById('otp' + (i+1)).focus();
+      });
+      box.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !box.value && i > 0) {
+          const prev = document.getElementById('otp' + (i-1));
+          prev.value = ''; prev.classList.remove('filled'); prev.focus();
+        }
+      });
+      box.addEventListener('paste', e => {
+        e.preventDefault();
+        const text = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,OTP_LEN);
+        for (let j = 0; j < text.length; j++) {
+          const b = document.getElementById('otp'+j);
+          b.value = text[j]; b.classList.add('filled');
+        }
+        document.getElementById('otp'+Math.min(text.length,OTP_LEN-1)).focus();
+      });
+    }
+
+    function startTimer() {
+      timerSec = 60;
+      document.getElementById('timer-count').textContent = timerSec;
+      document.getElementById('timer-text').style.display = 'inline';
+      document.getElementById('resend-btn').style.display = 'none';
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timerSec--;
+        document.getElementById('timer-count').textContent = timerSec;
+        if (timerSec <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById('timer-text').style.display = 'none';
+          document.getElementById('resend-btn').style.display = 'inline-block';
+        }
+      }, 1000);
+    }
+
+    function onResend() {
+      document.getElementById('resend-btn').style.display = 'none';
+      for (let i = 0; i < OTP_LEN; i++) {
+        const b = document.getElementById('otp'+i);
+        b.value = ''; b.classList.remove('filled');
+      }
+      document.getElementById('otp-error').classList.remove('visible');
+      startTimer();
+      document.getElementById('otp0').focus();
+    }
+
+    function onVerify() {
+      let code = '';
+      for (let i = 0; i < OTP_LEN; i++) code += document.getElementById('otp'+i).value;
+      if (code.length < 6) {
+        document.getElementById('otp-error').classList.add('visible');
+        document.getElementById('otp'+code.length).focus(); return;
+      }
+      const btn = document.getElementById('verify-btn');
+      btn.classList.add('loading'); btn.disabled = true;
+      setTimeout(() => {
+        btn.classList.remove('loading'); btn.disabled = false;
+        if (timerInterval) clearInterval(timerInterval);
+        // Navigate to Care Plan screen
+        document.getElementById('view-login').classList.remove('active');
+        document.getElementById('view-careplan').classList.add('active');
+      }, 1300);
+    }
+
+    function onBack() {
+      if (timerInterval) clearInterval(timerInterval);
+      showLoginStep('phone');
+      for (let i = 0; i < OTP_LEN; i++) {
+        const b = document.getElementById('otp'+i);
+        b.value = ''; b.classList.remove('filled');
+      }
+      document.getElementById('otp-error').classList.remove('visible');
+    }
+
+    function setNav(el) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
+    }
+  </script>
+</body>
+</html>

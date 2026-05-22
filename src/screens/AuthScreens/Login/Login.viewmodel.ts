@@ -1,153 +1,231 @@
-import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AUTH_STACK_NAVIGATOR } from 'navigators/routes';
-import { useTranslation } from 'react-i18next';
-import { logger } from 'utils/SecureLogger';
-import Sentry, { logError, setContext, setUserContext, trackEvent } from 'utils/SentryUtil';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {TextInput} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useDispatch} from 'react-redux';
+import {useTranslation} from 'react-i18next';
+import {logger} from 'utils/SecureLogger';
+import Sentry, {logError, setUserContext, trackEvent} from 'utils/SentryUtil';
 import StorageService from 'utils/StorageService';
-import { useStyles } from './Login.styles';
-import { loginSchema, validateData, validateField } from '../../../utils/ValidationSchemas';
+import {ThemeOptions, AuthStackParamList} from 'types/types';
+import {useTheme} from '../../../contexts/ThemeContext';
+import {useStyles} from './Login.styles';
+import {phoneSchema, otpSchema, validateData, validateField} from 'utils/ValidationSchemas';
+import {setToken} from '../../../redux/reducer/AppSlice';
+import {AppDispatch} from '../../../redux/app/store';
 
-type AuthStackParamList = {
-  HOME: undefined;
-  HOME_DETAILS: { data?: object };
-};
+type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'LOGIN_SCREEN'>;
 
-type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'HOME'>;
+type LoginStep = 'phone' | 'otp';
+
+const RESEND_COOLDOWN_SECONDS = 30;
+const OTP_LENGTH = 6;
 
 const useViewModel = () => {
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [isUsernameSet, setIsUsernameSet] = useState<boolean>(false);
-  const [isPasswordSet, setIsPasswordSet] = useState<boolean>(false);
-  const [usernameErrorMsg, setUsernameErrorMsg] = useState<string>('');
-  const [passwordErrorMsg, setPasswordErrorMsg] = useState<string>('');
+  const [step, setStep] = useState<LoginStep>('phone');
+  const [phone, setPhone] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [isPhoneFocused, setIsPhoneFocused] = useState(false);
+  const [otpValues, setOtpValues] = useState<string[]>(Array(OTP_LENGTH).fill(''));
+  const [otpError, setOtpError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [canResend, setCanResend] = useState(false);
+
+  const otpInputRefs = useRef<Array<TextInput | null>>(Array(OTP_LENGTH).fill(null));
 
   const navigation = useNavigation<NavigationProp>();
-
+  const dispatch = useDispatch<AppDispatch>();
   const styles = useStyles();
-  const { t } = useTranslation();
+  const {t} = useTranslation();
+  const {theme} = useTheme();
 
-  const onSubmit = async () => {
-    trackEvent('Login Attempt', { username });
+  const isDark = theme === ThemeOptions.dark;
 
-    await Sentry.startSpan(
-      {
-        name: 'User Login',
-        op: 'auth.login',
-      },
-      async (span) => {
-        try {
-          // Validate login data using Yup schema
-          const validationResult = await validateData(
-            {
-              email: username,
-              password: password,
-            },
-            loginSchema,
-          );
+  // Countdown timer for OTP resend
+  useEffect(() => {
+    if (timer <= 0) {
+      setCanResend(true);
+      return;
+    }
+    const interval = setInterval(() => {
+      setTimer(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timer]);
 
-          if (!validationResult.isValid) {
-            // Set error states based on validation results
-            if (validationResult.errors.email) {
-              setIsUsernameSet(true);
-              setUsernameErrorMsg(validationResult.errors.email);
-            }
-            if (validationResult.errors.password) {
-              setIsPasswordSet(true);
-              setPasswordErrorMsg(validationResult.errors.password);
-            }
-            return;
-          }
+  const maskedPhone =
+    phone.length >= 6
+      ? `+1 ${'•'.repeat(phone.length - 4)}${phone.slice(-4)}`
+      : `+1 ${phone}`;
 
-          // Clear any existing error states
-          setIsUsernameSet(false);
-          setIsPasswordSet(false);
-          setUsernameErrorMsg('');
-          setPasswordErrorMsg('');
+  // ─── Phone step handlers ──────────────────────────────────────────────────
 
-          setUserContext(username, username);
+  const handlePhoneChange = (text: string) => {
+    const digits = text.replace(/[^0-9]/g, '');
+    setPhone(digits);
+    if (phoneError) {
+      setPhoneError('');
+    }
+  };
 
-          setContext('user_info', {
-            email: username,
-          });
+  const onPhoneFocus = () => setIsPhoneFocused(true);
 
-          trackEvent('Login Success', {
-            userId: username,
-          });
-          span?.setStatus({
-            code: 1,
-            message: 'Login Successful',
-          });
-          StorageService.storeItem(StorageService.storageKeys.isLoggedIn, true);
-          navigation.navigate(AUTH_STACK_NAVIGATOR.HOME);
-        } catch (error) {
-          logger.error('Login submission error:', { error });
+  const onPhoneBlur = async () => {
+    setIsPhoneFocused(false);
+    if (!phone) {
+      return;
+    }
+    const result = await validateField('phone', phone, phoneSchema);
+    if (!result.isValid) {
+      setPhoneError(result.error);
+    }
+  };
 
-          logError(error, {
-            screen: 'Login',
-            action: 'handleLogin',
-            email: username,
-          });
+  const onSendOtp = async () => {
+    await Sentry.startSpan({name: 'Send OTP', op: 'auth.sendOtp'}, async span => {
+      try {
+        setIsLoading(true);
 
-          // Track failed login
-          trackEvent('Login Failed', {
-            username,
-            error: error || 'Login failed',
-          });
-          span.setStatus({
-            code: 2,
-            message: 'unknown_error',
-          });
+        const result = await validateData({phone}, phoneSchema);
+        if (!result.isValid) {
+          setPhoneError(result.errors.phone ?? t('login.phone.error'));
+          return;
         }
-      },
-    );
+
+        trackEvent('OTP Requested', {lastFour: phone.slice(-4)});
+
+        // TODO: Replace with real API call
+        // await HTTPService.post('/auth/send-otp', { phone: `+1${phone}` });
+
+        logger.info('OTP sent', {lastFour: phone.slice(-4)});
+        span?.setStatus({code: 1, message: 'OTP sent'});
+
+        setStep('otp');
+        setOtpValues(Array(OTP_LENGTH).fill(''));
+        setOtpError('');
+        setTimer(RESEND_COOLDOWN_SECONDS);
+        setCanResend(false);
+
+        // Auto-focus first OTP box after transition animation settles
+        setTimeout(() => {
+          otpInputRefs.current[0]?.focus();
+        }, 350);
+      } catch (error) {
+        logger.error('Failed to send OTP', {error});
+        logError(error, {screen: 'Login', action: 'onSendOtp'});
+        trackEvent('OTP Send Failed', {error: String(error)});
+        span?.setStatus({code: 2, message: 'unknown_error'});
+      } finally {
+        setIsLoading(false);
+      }
+    });
   };
 
-  const handlePasswordChange = (text: string) => {
-    // Reset the isPasswordSet when the password is updated
-    setIsPasswordSet(false); // Reset error state
-    setPassword(text); // Update password state
+  // ─── OTP step handlers ────────────────────────────────────────────────────
+
+  const handleOtpChange = useCallback(
+    (text: string, index: number) => {
+      const digit = text.replace(/[^0-9]/g, '').slice(-1);
+      const updated = [...otpValues];
+      updated[index] = digit;
+      setOtpValues(updated);
+
+      if (otpError) {
+        setOtpError('');
+      }
+
+      if (digit && index < OTP_LENGTH - 1) {
+        otpInputRefs.current[index + 1]?.focus();
+      }
+    },
+    [otpValues, otpError],
+  );
+
+  const handleOtpKeyPress = useCallback(
+    (key: string, index: number) => {
+      if (key === 'Backspace' && !otpValues[index] && index > 0) {
+        const updated = [...otpValues];
+        updated[index - 1] = '';
+        setOtpValues(updated);
+        otpInputRefs.current[index - 1]?.focus();
+      }
+    },
+    [otpValues],
+  );
+
+  const onVerifyOtp = async () => {
+    const otp = otpValues.join('');
+    await Sentry.startSpan({name: 'Verify OTP', op: 'auth.verifyOtp'}, async span => {
+      try {
+        setIsLoading(true);
+
+        const result = await validateData({otp}, otpSchema);
+        if (!result.isValid) {
+          setOtpError(result.errors.otp ?? t('login.otp.error'));
+          return;
+        }
+
+        // TODO: Replace with real API call
+        // const response = await HTTPService.post('/auth/verify-otp', { phone: `+1${phone}`, otp });
+
+        setUserContext(phone, '');
+        trackEvent('OTP Verified', {lastFour: phone.slice(-4)});
+        span?.setStatus({code: 1, message: 'OTP verified'});
+
+        await StorageService.storeItem(StorageService.storageKeys.isLoggedIn, true, true);
+        dispatch(setToken('session-token'));
+      } catch (error) {
+        logger.error('OTP verification failed', {error});
+        logError(error, {screen: 'Login', action: 'onVerifyOtp'});
+        trackEvent('OTP Verify Failed', {error: String(error)});
+        span?.setStatus({code: 2, message: 'unknown_error'});
+      } finally {
+        setIsLoading(false);
+      }
+    });
   };
 
-  const handleUserNameChange = (text: string) => {
-    // Reset the isUsernameSet when the username is updated
-    setIsUsernameSet(false); // Reset error state
-    setUsername(text); // Update username state
-  };
-
-  const onEmailBlur = async () => {
-    const emailValidation = await validateField('email', username, loginSchema);
-    if (!emailValidation.isValid) {
-      setIsUsernameSet(true);
-      setUsernameErrorMsg(emailValidation.error);
+  const handleResendOtp = async () => {
+    if (!canResend || isLoading) {
+      return;
     }
+    setOtpValues(Array(OTP_LENGTH).fill(''));
+    setOtpError('');
+    trackEvent('OTP Resend Requested', {lastFour: phone.slice(-4)});
+    await onSendOtp();
   };
 
-  const onPasswordBlur = async () => {
-    const passwordValidation = await validateField('password', password, loginSchema);
-    if (!passwordValidation.isValid) {
-      setIsPasswordSet(true);
-      setPasswordErrorMsg(passwordValidation.error);
-    }
+  const onBackToPhone = () => {
+    setStep('phone');
+    setOtpValues(Array(OTP_LENGTH).fill(''));
+    setOtpError('');
   };
 
   return {
-    username,
-    password,
-    isPasswordSet,
-    isUsernameSet,
-    usernameErrorMsg,
-    passwordErrorMsg,
-    handlePasswordChange,
-    handleUserNameChange,
-    setPassword,
-    onSubmit,
+    step,
+    phone,
+    phoneError,
+    isPhoneFocused,
+    otpValues,
+    otpError,
+    isLoading,
+    timer,
+    canResend,
+    maskedPhone,
+    isDark,
+    otpInputRefs,
+    handlePhoneChange,
+    onPhoneFocus,
+    onPhoneBlur,
+    onSendOtp,
+    handleOtpChange,
+    handleOtpKeyPress,
+    onVerifyOtp,
+    handleResendOtp,
+    onBackToPhone,
     styles,
     t,
-    onEmailBlur,
-    onPasswordBlur,
   };
 };
 

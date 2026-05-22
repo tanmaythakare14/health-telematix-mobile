@@ -239,6 +239,9 @@ npm install
 # Start Metro bundler
 npm start
 
+# Start Metro bundler
+npm run dev
+
 # Run on iOS (macOS only)
 npm run ios
 
